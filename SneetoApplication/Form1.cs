@@ -12,9 +12,20 @@ namespace SneetoApplication
 {
     public partial class Form1 : Form
     {
+        TwitchChatClient twitchChatClient;
         public Form1()
         {
             InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            twitchChatClient = TwitchChatClient.Instance;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            twitchChatClient.Connect();
         }
     }
 }
