@@ -200,6 +200,7 @@
     <Compile Include="QueryHolder.cs" />
     <Compile Include="TwitchChatClient.cs" />
     <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="WordStemmer.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
