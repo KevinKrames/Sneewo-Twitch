@@ -9,11 +9,13 @@ namespace SneetoApplication
 {
     public class Brain
     {
-        private TokenMemoryManager memoryManager;
+        public static Dictionary<string, string> configuration;
+        private TokenMemoryManager tokenMemoryManager;
         private const float TicksToMilliseconds = 10000;
         public Brain()
         {
-            memoryManager = new TokenMemoryManager();
+            tokenMemoryManager = new TokenMemoryManager();
+            configuration = Utilities.Utilities.loadDictionaryFromJsonFile("configuration.json");
         }
 
         public string TimedGenerateSentence(string sourceSentence, int milisecondsToGenerate)
@@ -22,7 +24,7 @@ namespace SneetoApplication
 
             var wordList = new WordList(sourceSentence);
 
-            memoryManager.UpdateUsedWords(wordList);
+            tokenMemoryManager.UpdateUsedWords(wordList);
 
             var timeStarted = GetTimeMilliseconds();
 
@@ -38,9 +40,9 @@ namespace SneetoApplication
         {
             var sentence = new WordList();
 
-            var currentNode = Utilities.Utilities.RandomOneToNumber(2) == 1 ? memoryManager.GetForwardsTree() : memoryManager.GetBackwardsTree();
+            var currentNode = Utilities.Utilities.RandomOneToNumber(2) == 1 ? tokenMemoryManager.GetForwardsTree() : tokenMemoryManager.GetBackwardsTree();
 
-            var childNodes = memoryManager.getChildNodes(currentNode);
+            var childNodes = tokenMemoryManager.getChildNodes(currentNode);
 
             return sentence.GetString();
         }
@@ -50,9 +52,9 @@ namespace SneetoApplication
         public void TrainSentence(string sourceSentence)
         {
             var wordList = new WordList(sourceSentence);
-            TrainSentenceTree(wordList.Get(), memoryManager.GetForwardsTree());
+            TrainSentenceTree(wordList.Get(), tokenMemoryManager.GetForwardsTree());
             wordList.Invert();
-            TrainSentenceTree(wordList.Get(), memoryManager.GetBackwardsTree());
+            TrainSentenceTree(wordList.Get(), tokenMemoryManager.GetBackwardsTree());
         }
 
         private void TrainSentenceTree(List<string> sourceSentence, Token tree)
@@ -63,7 +65,7 @@ namespace SneetoApplication
             {
                 if (lastNode != null)
                 {
-                    currentNode = memoryManager.CreateOrGetNode(word, lastNode);
+                    currentNode = tokenMemoryManager.CreateOrGetNode(word, lastNode);
                 }
 
                 currentNode.Increment();

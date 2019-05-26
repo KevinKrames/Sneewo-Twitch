@@ -12,17 +12,30 @@ namespace SneetoApplication
         private DatabaseManager databaseManager;
         private Token forwardRoot;
         private Token backwardRoot;
+        private bool UseDatabase;
 
         public TokenMemoryManager()
         {
             databaseManager = new DatabaseManager();
+            InitializeMemory();
         }
 
-        //Gets forwards generating token tree
+        private void InitializeMemory()
+        {
+            forwardRoot = new Token();
+            backwardRoot = new Token();
+        }
+
         public Token GetForwardsTree()
         {
             var data = databaseManager.RetrieveQueryString(QueryHolder.GetForwardNodeRoot());
             return forwardRoot;
+        }
+        
+        public Token GetBackwardsTree()
+        {
+            var data = databaseManager.RetrieveQueryString(QueryHolder.GetBackwardNodeRoot());
+            return backwardRoot;
         }
 
         internal void UpdateUsedWords(WordList wordList)
@@ -33,12 +46,6 @@ namespace SneetoApplication
         internal void IncrementParentID(int parentID)
         {
             throw new NotImplementedException();
-        }
-
-        public Token GetBackwardsTree()
-        {
-            var data = databaseManager.RetrieveQueryString(QueryHolder.GetBackwardNodeRoot());
-            return backwardRoot;
         }
 
         internal Token CreateOrGetNode(string word, Token lastNode)

@@ -13,12 +13,12 @@ namespace SneetoApplication.Data_Structures
         
         public TwitchCredentials()
         {
-            dynamic data = Utilities.Utilities.loadJsonFile("twitch_credentials.json");
+            var data = Utilities.Utilities.loadDictionaryFromJsonFile("twitch_credentials.json");
 
             if (data == null) return;
 
-            twitchUsername = data.twitchUsername;
-            twitchOAuth = data.twitchOAuth;
+            twitchUsername = data["twitchUsername"];
+            twitchOAuth = data["twitchOAuth"];
         }
     }
 }

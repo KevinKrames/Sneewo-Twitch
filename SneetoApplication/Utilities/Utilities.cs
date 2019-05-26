@@ -24,7 +24,12 @@ namespace SneetoApplication.Utilities
             return JsonConvert.DeserializeObject(json);
         }
 
-        public static dynamic loadJsonFile(string fileName)
+        public static Dictionary<string, string> loadDictionaryFromJsonFile(string fileName)
+        {
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(loadFile(fileName));
+        }
+
+        public static string loadFile(string fileName)
         {
             string data = "";
             try
@@ -37,7 +42,7 @@ namespace SneetoApplication.Utilities
                 Console.WriteLine("Error reading file" + fileName);
                 Console.WriteLine(e.StackTrace);
             }
-            return jsonUnserialize(data);
+            return data;
         }
 
         public static int RandomOneToNumber(int number)

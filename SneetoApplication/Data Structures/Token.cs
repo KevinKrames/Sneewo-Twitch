@@ -14,17 +14,13 @@ namespace SneetoApplication.Data_Structures
         private int PMID;
         private int usage;
         private int childrenUsage;
-        private TokenMemoryManager memoryManager;
 
-        public Token(TokenMemoryManager manager)
-        {
-            memoryManager = manager;
-        }
+        public Token() {}
 
         public void Increment()
         {
             usage++;
-            memoryManager.IncrementParentID(parentID);
+            //memoryManager.IncrementParentID(parentID);
         }
     }
 }
