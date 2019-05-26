@@ -24,12 +24,9 @@ namespace SneetoApplication
             {
                 if (twitchChatClient == null)
                 {
-                    return new TwitchChatClient();
+                    twitchChatClient = new TwitchChatClient();
                 }
-                else
-                {
-                    return twitchChatClient;
-                }
+                return twitchChatClient;
             }
             set
             {
