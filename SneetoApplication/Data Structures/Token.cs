@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SneetoApplication.Data_Structures
 {
-    public class WordNode
+    public class Token
     {
         private string wordText;
         private int ID;
@@ -14,9 +14,9 @@ namespace SneetoApplication.Data_Structures
         private int PMID;
         private int usage;
         private int childrenUsage;
-        private MemoryManager memoryManager;
+        private TokenMemoryManager memoryManager;
 
-        public WordNode(MemoryManager manager)
+        public Token(TokenMemoryManager manager)
         {
             memoryManager = manager;
         }

@@ -7,18 +7,19 @@ using System.Threading.Tasks;
 
 namespace SneetoApplication
 {
-    public class MemoryManager
+    public class TokenMemoryManager
     {
         private DatabaseManager databaseManager;
-        private WordNode forwardRoot;
-        private WordNode backwardRoot;
+        private Token forwardRoot;
+        private Token backwardRoot;
 
-        public MemoryManager()
+        public TokenMemoryManager()
         {
             databaseManager = new DatabaseManager();
         }
 
-        public WordNode GetForwardsTree()
+        //Gets forwards generating token tree
+        public Token GetForwardsTree()
         {
             var data = databaseManager.RetrieveQueryString(QueryHolder.GetForwardNodeRoot());
             return forwardRoot;
@@ -34,18 +35,18 @@ namespace SneetoApplication
             throw new NotImplementedException();
         }
 
-        public WordNode GetBackwardsTree()
+        public Token GetBackwardsTree()
         {
             var data = databaseManager.RetrieveQueryString(QueryHolder.GetBackwardNodeRoot());
             return backwardRoot;
         }
 
-        internal WordNode CreateOrGetNode(string word, WordNode lastNode)
+        internal Token CreateOrGetNode(string word, Token lastNode)
         {
             throw new NotImplementedException();
         }
 
-        public List<WordNode> getChildNodes(WordNode currentNode)
+        public List<Token> getChildNodes(Token currentNode)
         {
             throw new NotImplementedException();
         }

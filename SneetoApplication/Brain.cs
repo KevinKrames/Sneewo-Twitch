@@ -9,11 +9,11 @@ namespace SneetoApplication
 {
     public class Brain
     {
-        private MemoryManager memoryManager;
+        private TokenMemoryManager memoryManager;
         private const float TicksToMilliseconds = 10000;
         public Brain()
         {
-            memoryManager = new MemoryManager();
+            memoryManager = new TokenMemoryManager();
         }
 
         public string TimedGenerateSentence(string sourceSentence, int milisecondsToGenerate)
@@ -55,10 +55,10 @@ namespace SneetoApplication
             TrainSentenceTree(wordList.Get(), memoryManager.GetBackwardsTree());
         }
 
-        private void TrainSentenceTree(List<string> sourceSentence, WordNode tree)
+        private void TrainSentenceTree(List<string> sourceSentence, Token tree)
         {
             var currentNode = tree;
-            WordNode lastNode = null;
+            Token lastNode = null;
             foreach(string word in sourceSentence)
             {
                 if (lastNode != null)

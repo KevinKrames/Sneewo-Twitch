@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace SneetoApplication
 {
+    // Let's go with raw queries instead of using EntityFramework. This should improve optimization since we can optimize queries.
     public static class QueryHolder
     {
         public static string GetForwardNodeRoot()
