@@ -184,9 +184,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Brain.cs" />
+    <Compile Include="Data Structures\TokenManager.cs" />
     <Compile Include="Data Structures\TwitchCredentials.cs" />
     <Compile Include="Data Structures\Token.cs" />
-    <Compile Include="Data Structures\WordList.cs" />
+    <Compile Include="Data Structures\TokenList.cs" />
     <Compile Include="DatabaseManager.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

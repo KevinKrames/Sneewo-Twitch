@@ -10,7 +10,7 @@ namespace SneetoApplication.Utilities
     public static class Utilities
     {
         public static Random random = new Random();
-        public static String jsonSerialize(Object ob)
+        public static string jsonSerialize(Object ob)
         {
             return JsonConvert.SerializeObject(ob);
         }
@@ -35,7 +35,7 @@ namespace SneetoApplication.Utilities
             try
             {
                 StreamReader sr = new StreamReader(Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\" + fileName);
-                data = sr.ReadLine();
+                data = sr.ReadToEnd();
             }
             catch (Exception e)
             {
@@ -43,6 +43,12 @@ namespace SneetoApplication.Utilities
                 Console.WriteLine(e.StackTrace);
             }
             return data;
+        }
+
+        public static void WriteLineToFile(string data, string fileName)
+        {
+            var path = Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\" + fileName;
+            File.AppendAllText(path, data + Environment.NewLine);
         }
 
         public static int RandomOneToNumber(int number)

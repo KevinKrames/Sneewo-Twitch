@@ -22,7 +22,7 @@ namespace SneetoApplication
         {
             var result = "";
 
-            var wordList = new WordList(sourceSentence);
+            var wordList = new TokenList(sourceSentence);
 
             tokenMemoryManager.UpdateUsedWords(wordList);
 
@@ -36,9 +36,9 @@ namespace SneetoApplication
             return result;
         }
 
-        private string GenerateRandomSentence(WordList wordList)
+        private string GenerateRandomSentence(TokenList wordList)
         {
-            var sentence = new WordList();
+            var sentence = new TokenList();
 
             var currentNode = Utilities.Utilities.RandomOneToNumber(2) == 1 ? tokenMemoryManager.GetForwardsTree() : tokenMemoryManager.GetBackwardsTree();
 
@@ -51,7 +51,7 @@ namespace SneetoApplication
 
         public void TrainSentence(string sourceSentence)
         {
-            var wordList = new WordList(sourceSentence);
+            var wordList = new TokenList(sourceSentence);
             TrainSentenceTree(wordList.Get(), tokenMemoryManager.GetForwardsTree());
             wordList.Invert();
             TrainSentenceTree(wordList.Get(), tokenMemoryManager.GetBackwardsTree());
@@ -68,7 +68,7 @@ namespace SneetoApplication
                     currentNode = tokenMemoryManager.CreateOrGetNode(word, lastNode);
                 }
 
-                currentNode.Increment();
+                //currentNode.Increment();
 
                 lastNode = currentNode;
             }

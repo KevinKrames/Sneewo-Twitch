@@ -8,19 +8,12 @@ namespace SneetoApplication.Data_Structures
 {
     public class Token
     {
-        private string wordText;
-        private int ID;
-        private int parentID;
-        private int PMID;
-        private int usage;
-        private int childrenUsage;
-
-        public Token() {}
-
-        public void Increment()
-        {
-            usage++;
-            //memoryManager.IncrementParentID(parentID);
-        }
+        public string WordText;
+        public Guid ID;
+        public Guid ParentID;
+        public Guid StemID;
+        public int Usage;
+        public int TotalChildrenUsage;
+        public List<Guid> ChildrenTokens;
     }
 }

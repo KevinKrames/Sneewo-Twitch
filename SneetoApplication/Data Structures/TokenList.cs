@@ -1,5 +1,6 @@
 ﻿using SneetoApplication.Utilities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,31 +8,22 @@ using System.Threading.Tasks;
 
 namespace SneetoApplication.Data_Structures
 {
-    public class WordList
+    public class TokenList : IEnumerable<string>
     {
         private List<string> wordList;
-        public WordList()
+        public TokenList()
         {
             wordList = new List<string>();
         }
 
-        public WordList(string sentence)
+        public TokenList(string sentence)
         {
             wordList = SplitBySpace(sentence);
         }
 
         public List<string> SplitBySpace(string sentence)
         {
-            sentence = sentence.Trim();
-            var data = new List<string>();
-            string[] words = sentence.Split(null);
-
-            foreach (var word in words)
-            {
-                data.Add(word);
-            }
-
-            return data;
+            return sentence.Trim().Split(' ').ToList();
         }
 
         public void Invert() => wordList.Reverse();
@@ -49,6 +41,20 @@ namespace SneetoApplication.Data_Structures
         public void Append(string word)
         {
             wordList.Add(word);
+        }
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            foreach (var word in wordList)
+            {
+                yield return word;
+            }
+            yield return null;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
         }
     }
 }
