@@ -49,7 +49,6 @@ namespace SneetoApplication.Data_Structures
             {
                 yield return word;
             }
-            yield return null;
         }
 
         IEnumerator IEnumerable.GetEnumerator()

@@ -15,13 +15,14 @@ namespace SneetoApplication.Utilities
             return JsonConvert.SerializeObject(ob);
         }
 
-        public static object jsonUnserialize(String json)
+        public static Dictionary<string, string> jsonUnserialize(string json)
         {
             if (json == null)
             {
                 return null;
             }
-            return JsonConvert.DeserializeObject(json);
+
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
         }
 
         public static Dictionary<string, string> loadDictionaryFromJsonFile(string fileName)

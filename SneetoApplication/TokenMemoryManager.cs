@@ -25,22 +25,26 @@ namespace SneetoApplication
 
         public virtual void SetupManager()
         {
-            databaseManager = new DatabaseManager();
+            if (Brain.configuration[Brain.USE_DATABASE] != null
+                && Brain.configuration[Brain.USE_DATABASE].Equals(bool.TrueString, StringComparison.CurrentCultureIgnoreCase))
+            {
+                databaseManager = new DatabaseManager();
+            }
             InitializeMemory();
         }
 
         private void InitializeMemory()
         {
-            if (Brain.configuration["useDatabase"] != null
-                && Brain.configuration["useDatabase"].Equals("true", StringComparison.CurrentCultureIgnoreCase))
+            if (Brain.configuration[Brain.USE_DATABASE] != null
+                && Brain.configuration[Brain.USE_DATABASE].Equals(bool.TrueString, StringComparison.CurrentCultureIgnoreCase))
             {
                 var data = databaseManager.RetrieveQueryString(QueryHolder.GetBackwardNodeRoot());
                 data = databaseManager.RetrieveQueryString(QueryHolder.GetForwardNodeRoot());
 
             } else
             {
-                forwardRoot = new Token();
-                backwardRoot = new Token();
+                forwardRoot = TokenManager.TrainNewToken(null, "<start>", -1);
+                backwardRoot = TokenManager.TrainNewToken(null, "<end>", -1);
                 TrainFromFile();
             }
         }
@@ -56,13 +60,17 @@ namespace SneetoApplication
                 {
                     linesTrained++;
                     data = sr.ReadLine();
-                    TrainTokenList(new TokenList(data));
-                    if (linesTrained % 10000 == 0) { System.Console.WriteLine(@"Trained: {linesTrained}"); }
+                    if (data[data.Length-1] == ',')
+                    {
+                        data = data.Substring(0, data.Length - 1);
+                    }
+                    TrainTokenList(new TokenList(Utilities.Utilities.jsonUnserialize(data)["message"]));
+                    if (linesTrained % 10000 == 0) { Brain.form.consoleTextBox.AppendText($"Trained: {linesTrained}\n"); }
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error reading file" + DATA_FILE_NAME);
+                Console.WriteLine("Error training file" + DATA_FILE_NAME);
                 Console.WriteLine(e.StackTrace);
             }
         }
@@ -77,14 +85,18 @@ namespace SneetoApplication
         private void TrainTokenList(TokenList tokenList, Token currentToken)
         {
             var nextToken = tokenList.GetEnumerator();
-            while (nextToken != null)
+            var hasNextToken = nextToken.MoveNext();
+            while (hasNextToken)
             {
                 if (DoesTokenExist(nextToken.Current, currentToken, out var outIndex))
                 {
-
+                    TokenManager.TrainExistingToken(currentToken, outIndex);
                 }
-
-                nextToken.MoveNext();
+                else
+                {
+                    TokenManager.TrainNewToken(currentToken, nextToken.Current, outIndex);
+                }
+                hasNextToken = nextToken.MoveNext();
             }
         }
 
@@ -92,7 +104,7 @@ namespace SneetoApplication
         {
             outIndex = -1;
             var children = token.ChildrenTokens;
-            if (children == null && children.Count != 0) return false;
+            if (children == null || children.Count == 0) return false;
 
             var startSearchIndex = 0;
             var currentSearchIndex = 0;

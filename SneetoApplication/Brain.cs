@@ -10,12 +10,15 @@ namespace SneetoApplication
     public class Brain
     {
         public static Dictionary<string, string> configuration;
+        public static readonly string USE_DATABASE = "useDatabase";
+        public static Form1 form;
+
         private TokenMemoryManager tokenMemoryManager;
-        private const float TicksToMilliseconds = 10000;
-        public Brain()
+        public Brain(Form1 form1)
         {
-            tokenMemoryManager = new TokenMemoryManager();
+            form = form1;
             configuration = Utilities.Utilities.loadDictionaryFromJsonFile("configuration.json");
+            tokenMemoryManager = new TokenMemoryManager();
         }
 
         public string TimedGenerateSentence(string sourceSentence, int milisecondsToGenerate)
@@ -47,7 +50,7 @@ namespace SneetoApplication
             return sentence.GetString();
         }
 
-        public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TicksToMilliseconds);
+        public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
 
         public void TrainSentence(string sourceSentence)
         {

@@ -14,9 +14,11 @@ namespace SneetoApplication
     public partial class Form1 : Form
     {
         TwitchChatClient twitchChatClient;
+        Brain brain;
         public Form1()
         {
             InitializeComponent();
+            brain = new Brain(this);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -78,6 +80,15 @@ namespace SneetoApplication
                 Console.WriteLine("Error reading file");
                 Console.WriteLine(ex.StackTrace);
             }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void consoleTextBox_TextChanged(object sender, EventArgs e)
+        {
         }
     }
 }
