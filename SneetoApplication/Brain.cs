@@ -10,14 +10,18 @@ namespace SneetoApplication
     public class Brain
     {
         public static Dictionary<string, string> configuration;
+        public static List<string> badWords;
         public static readonly string USE_DATABASE = "useDatabase";
+        public static readonly string config = "configuration.json";
+        public static readonly string badWordsFile = "badWords.txt";
         public static Form1 form;
 
         private TokenMemoryManager tokenMemoryManager;
         public Brain(Form1 form1)
         {
             form = form1;
-            configuration = Utilities.Utilities.loadDictionaryFromJsonFile("configuration.json");
+            configuration = Utilities.Utilities.loadDictionaryFromJsonFile(config);
+            badWords = Utilities.Utilities.loadListFromTextFile(badWordsFile);
             tokenMemoryManager = new TokenMemoryManager();
         }
 
@@ -52,29 +56,28 @@ namespace SneetoApplication
 
         public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
 
-        public void TrainSentence(string sourceSentence)
+        public string GenerateRandomSentence()
         {
-            var wordList = new TokenList(sourceSentence);
-            TrainSentenceTree(wordList.Get(), tokenMemoryManager.GetForwardsTree());
-            wordList.Invert();
-            TrainSentenceTree(wordList.Get(), tokenMemoryManager.GetBackwardsTree());
+            return GetNextRandomWord(tokenMemoryManager.GetForwardsTree()).Trim();
         }
 
-        private void TrainSentenceTree(List<string> sourceSentence, Token tree)
+        private string GetNextRandomWord(Token token)
         {
-            var currentNode = tree;
-            Token lastNode = null;
-            foreach(string word in sourceSentence)
+            if (token.ChildrenTokens == null) return "";
+
+            var number = Utilities.Utilities.RandomOneToNumber(token.TotalChildrenUsage);
+            Token tempToken;
+
+            foreach(Guid guid in token.ChildrenTokens)
             {
-                if (lastNode != null)
+                tempToken = TokenManager.GetTokenForID(guid);
+                number -= tempToken.Usage;
+                if (number <= 0)
                 {
-                    currentNode = tokenMemoryManager.CreateOrGetNode(word, lastNode);
+                    return tempToken.WordText + " " + GetNextRandomWord(tempToken);
                 }
-
-                //currentNode.Increment();
-
-                lastNode = currentNode;
             }
+            return "ERROR";
         }
     }
 }

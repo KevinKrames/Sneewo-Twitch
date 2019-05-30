@@ -14,7 +14,7 @@ namespace SneetoApplication
     public partial class Form1 : Form
     {
         TwitchChatClient twitchChatClient;
-        Brain brain;
+        private Brain brain;
         public Form1()
         {
             InitializeComponent();
@@ -89,6 +89,11 @@ namespace SneetoApplication
 
         private void consoleTextBox_TextChanged(object sender, EventArgs e)
         {
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            consoleTextBox.AppendText(brain.GenerateRandomSentence() + "\n");
         }
     }
 }

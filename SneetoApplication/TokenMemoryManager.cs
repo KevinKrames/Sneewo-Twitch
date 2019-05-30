@@ -90,11 +90,11 @@ namespace SneetoApplication
             {
                 if (DoesTokenExist(nextToken.Current, currentToken, out var outIndex))
                 {
-                    TokenManager.TrainExistingToken(currentToken, outIndex);
+                    currentToken = TokenManager.TrainExistingToken(currentToken, outIndex);
                 }
                 else
                 {
-                    TokenManager.TrainNewToken(currentToken, nextToken.Current, outIndex);
+                    currentToken = TokenManager.TrainNewToken(currentToken, nextToken.Current, outIndex);
                 }
                 hasNextToken = nextToken.MoveNext();
             }

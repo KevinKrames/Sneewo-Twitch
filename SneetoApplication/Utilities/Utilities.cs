@@ -30,6 +30,24 @@ namespace SneetoApplication.Utilities
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(loadFile(fileName));
         }
 
+        internal static List<string> loadListFromTextFile(string v)
+        {
+            string data = "";
+            var newList = new List<string>();
+            try
+            {
+                StreamReader sr = new StreamReader(Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\" + v);
+                data = sr.ReadToEnd();
+                newList.Add(data);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error reading file" + v);
+                Console.WriteLine(e.StackTrace);
+            }
+            return newList;
+        }
+
         public static string loadFile(string fileName)
         {
             string data = "";

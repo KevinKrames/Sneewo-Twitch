@@ -184,6 +184,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Brain.cs" />
+    <Compile Include="Data Structures\Stem.cs" />
+    <Compile Include="Data Structures\StemManager.cs" />
     <Compile Include="Data Structures\TokenManager.cs" />
     <Compile Include="Data Structures\TwitchCredentials.cs" />
     <Compile Include="Data Structures\Token.cs" />

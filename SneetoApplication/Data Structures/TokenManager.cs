@@ -24,10 +24,12 @@ namespace SneetoApplication.Data_Structures
             TokenDictionary = new Dictionary<Guid, Token>();
         }
 
-        public static void TrainExistingToken(Token Parent, int index)
+        public static Token TrainExistingToken(Token Parent, int index)
         {
             Parent.TotalChildrenUsage++;
-            GetTokenForID(Parent.ChildrenTokens[index]).Usage++;
+            var token = GetTokenForID(Parent.ChildrenTokens[index]);
+            token.Usage++;
+            return token;
         }
 
         public static Token TrainNewToken(Token currentToken, string newTokenText, int index)
@@ -40,6 +42,9 @@ namespace SneetoApplication.Data_Structures
                 token.Usage++;
                 token.WordText = newTokenText;
                 SetTokenForID(token.ID, token);
+
+                if (!token.WordText.Equals("<start>") && !token.WordText.Equals("<end>"))
+                    StemManager.AddToken(token);
 
                 if (currentToken != null)
                 {
