@@ -26,9 +26,7 @@ namespace SneetoApplication.Data_Structures
 
         public static Token TrainExistingToken(Token Parent, int index)
         {
-            Parent.TotalChildrenUsage++;
             var token = GetTokenForID(Parent.ChildrenTokens[index]);
-            token.Usage++;
             return token;
         }
 
@@ -39,7 +37,6 @@ namespace SneetoApplication.Data_Structures
                 var token = new Token();
                 token.ID = Guid.NewGuid();
                 token.ParentID = currentToken != null ? currentToken.ID : new Guid();
-                token.Usage++;
                 token.WordText = newTokenText;
                 SetTokenForID(token.ID, token);
 
@@ -48,7 +45,6 @@ namespace SneetoApplication.Data_Structures
 
                 if (currentToken != null)
                 {
-                    currentToken.TotalChildrenUsage++;
                     if (index < 0)
                     {
                         currentToken.ChildrenTokens = new List<Guid>();

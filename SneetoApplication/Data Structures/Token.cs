@@ -12,8 +12,7 @@ namespace SneetoApplication.Data_Structures
         public Guid ID;
         public Guid ParentID;
         public Guid StemID;
-        public int Usage;
-        public int TotalChildrenUsage;
+        public Guid PartnerID;
         public List<Guid> ChildrenTokens;
     }
 }

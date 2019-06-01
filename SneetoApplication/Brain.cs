@@ -65,19 +65,9 @@ namespace SneetoApplication
         {
             if (token.ChildrenTokens == null) return "";
 
-            var number = Utilities.Utilities.RandomOneToNumber(token.TotalChildrenUsage);
-            Token tempToken;
-
-            foreach(Guid guid in token.ChildrenTokens)
-            {
-                tempToken = TokenManager.GetTokenForID(guid);
-                number -= tempToken.Usage;
-                if (number <= 0)
-                {
-                    return tempToken.WordText + " " + GetNextRandomWord(tempToken);
-                }
-            }
-            return "ERROR";
+            var number = Utilities.Utilities.RandomOneToNumber(token.ChildrenTokens.Count);
+            Token tempToken = TokenManager.GetTokenForID(token.ChildrenTokens[number]);
+            return tempToken.WordText + " " + GetNextRandomWord(tempToken);
         }
     }
 }
