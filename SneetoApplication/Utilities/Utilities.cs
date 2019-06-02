@@ -72,6 +72,7 @@ namespace SneetoApplication.Utilities
 
         public static int RandomOneToNumber(int number)
         {
+            if (number == 0) return 0;
             return (int)(RandomZeroToOne() * (double)number)+1;
         }
 

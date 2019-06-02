@@ -35,37 +35,26 @@ namespace SneetoApplication
 
             var timeStarted = GetTimeMilliseconds();
 
-            while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate)
-            {
-                result = GenerateRandomSentence(wordList);
-            }
+            //while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate)
+            //{
+            //    result = GenerateRandomSentence(wordList);
+            //}
 
             return result;
-        }
-
-        private string GenerateRandomSentence(TokenList wordList)
-        {
-            var sentence = new TokenList();
-
-            var currentNode = Utilities.Utilities.RandomOneToNumber(2) == 1 ? tokenMemoryManager.GetForwardsTree() : tokenMemoryManager.GetBackwardsTree();
-
-            var childNodes = tokenMemoryManager.getChildNodes(currentNode);
-
-            return sentence.GetString();
         }
 
         public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
 
         public string GenerateRandomSentence()
         {
-            return GetNextRandomWord(tokenMemoryManager.GetForwardsTree()).Trim();
+            return GetNextRandomWord(tokenMemoryManager.GetForwardsRoot()).Trim();
         }
 
         private string GetNextRandomWord(Token token)
         {
             if (token.ChildrenTokens == null) return "";
 
-            var number = Utilities.Utilities.RandomOneToNumber(token.ChildrenTokens.Count);
+            var number = Utilities.Utilities.RandomOneToNumber(token.ChildrenTokens.Count-1);
             Token tempToken = TokenManager.GetTokenForID(token.ChildrenTokens[number]);
             return tempToken.WordText + " " + GetNextRandomWord(tempToken);
         }

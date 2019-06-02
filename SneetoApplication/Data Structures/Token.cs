@@ -10,7 +10,6 @@ namespace SneetoApplication.Data_Structures
     {
         public string WordText;
         public Guid ID;
-        public Guid ParentID;
         public Guid StemID;
         public Guid PartnerID;
         public List<Guid> ChildrenTokens;

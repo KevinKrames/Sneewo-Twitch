@@ -95,7 +95,7 @@ namespace UnitTests.Tests
             [Values(0, 1, 2, 3, 4)] int index
             )
         {
-            var result = mockTokenMemoryManager.Object.DoesTokenExist(searchText, token, out var outIndex);
+            var result = TokenManager.DoesTokenExist(searchText, token.ChildrenTokens, out var outIndex);
 
             Assert.IsTrue(result);
             Assert.AreEqual(index, outIndex);
@@ -108,7 +108,7 @@ namespace UnitTests.Tests
             [Values(0, 1, 2, 3, 4, 5)] int index
             )
         {
-            var result = mockTokenMemoryManager.Object.DoesTokenExist(searchText, token, out var outIndex);
+            var result = TokenManager.DoesTokenExist(searchText, token.ChildrenTokens, out var outIndex);
 
             Assert.IsFalse(result);
             Assert.AreEqual(index, outIndex);
@@ -123,7 +123,7 @@ namespace UnitTests.Tests
         {
             var moqObject = mockTokenMemoryManager.Object;
             var start = DateTime.Now.Ticks;
-            var result = moqObject.DoesTokenExist(searchText, bigToken, out var outIndex);
+            var result = TokenManager.DoesTokenExist(searchText, bigToken.ChildrenTokens, out var outIndex);
 
             var timeInMS = (DateTime.Now.Ticks - start) / (TimeSpan.TicksPerMillisecond * 1.0m);
 
@@ -140,13 +140,104 @@ namespace UnitTests.Tests
         {
             var moqObject = mockTokenMemoryManager.Object;
             var start = DateTime.Now.Ticks;
-            var result = moqObject.DoesTokenExist(searchText, bigToken, out var outIndex);
+            var result = TokenManager.DoesTokenExist(searchText, bigToken.ChildrenTokens, out var outIndex);
 
             var timeInMS = (DateTime.Now.Ticks - start) / (TimeSpan.TicksPerMillisecond * 1.0m);
 
             //Assert.Warn($"{searchText} completed, took: {timeInMS}ms");
             Assert.IsFalse(result);
             Assert.AreEqual(index, outIndex);
+        }
+
+        [Test]
+        public void Test_GetExisitingTokens_PartialList()
+        {
+            var tokenList = new TokenList("A list of existing tokens");
+            var childGuid = Guid.NewGuid();
+
+            var rootToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "root"
+            };
+            rootToken.ChildrenTokens.Add(childGuid);
+            TokenManager.SetTokenForID(rootToken.ID, rootToken);
+
+            var firstToken = new Token
+            {
+                ID = childGuid,
+                ChildrenTokens = new List<Guid>(),
+                WordText = "A"
+            };
+            childGuid = Guid.NewGuid();
+            firstToken.ChildrenTokens.Add(childGuid);
+            TokenManager.SetTokenForID(firstToken.ID, firstToken);
+
+            var secondToken = new Token
+            {
+                ID = childGuid,
+                ChildrenTokens = new List<Guid>(),
+                WordText = "list"
+            };
+            childGuid = Guid.NewGuid();
+            secondToken.ChildrenTokens.Add(childGuid);
+            TokenManager.SetTokenForID(secondToken.ID, secondToken);
+
+            var thirdToken = new Token
+            {
+                ID = childGuid,
+                ChildrenTokens = new List<Guid>(),
+                WordText = "of"
+            };
+            TokenManager.SetTokenForID(thirdToken.ID, thirdToken);
+
+            var computedList = mockTokenMemoryManager.Object.GetExisitingTokens(tokenList, rootToken);
+            Assert.AreEqual(new List<Token> { thirdToken, secondToken, firstToken }, computedList);
+        }
+
+        [Test]
+        public void Test_GetExisitingTokens_SingleItem()
+        {
+            var tokenList = new TokenList("Kappa");
+            var childGuid = Guid.NewGuid();
+
+            var rootToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "root"
+            };
+            rootToken.ChildrenTokens.Add(childGuid);
+            TokenManager.SetTokenForID(rootToken.ID, rootToken);
+
+            var firstToken = new Token
+            {
+                ID = childGuid,
+                ChildrenTokens = new List<Guid>(),
+                WordText = "Kappa"
+            };
+            TokenManager.SetTokenForID(firstToken.ID, firstToken);
+
+            var computedList = mockTokenMemoryManager.Object.GetExisitingTokens(tokenList, rootToken);
+            Assert.AreEqual(new List<Token> { firstToken }, computedList);
+        }
+
+        [Test]
+        public void Test_GetExisitingTokens_NoItems()
+        {
+            var tokenList = new TokenList("Kappa 123");
+
+            var rootToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "root"
+            };
+            TokenManager.SetTokenForID(rootToken.ID, rootToken);
+
+            var computedList = mockTokenMemoryManager.Object.GetExisitingTokens(tokenList, rootToken);
+            Assert.AreEqual(new List<Token>(), computedList);
         }
     }
 }

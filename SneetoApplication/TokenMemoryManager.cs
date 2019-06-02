@@ -12,8 +12,8 @@ namespace SneetoApplication
     public class TokenMemoryManager
     {
         private DatabaseManager databaseManager;
-        private Token forwardRoot;
-        private Token backwardRoot;
+        private Token forwardsRoot;
+        private Token backwardsRoot;
         private bool UseDatabase;
 
         public readonly static string DATA_FILE_NAME = "chatlog.json";
@@ -43,8 +43,8 @@ namespace SneetoApplication
 
             } else
             {
-                forwardRoot = TokenManager.TrainNewToken(null, "<start>", -1);
-                backwardRoot = TokenManager.TrainNewToken(null, "<end>", -1);
+                forwardsRoot = TokenManager.TrainNewToken(null, "<start>", -1);
+                backwardsRoot = TokenManager.TrainNewToken(null, "<end>", -1);
                 TrainFromFile();
             }
         }
@@ -77,76 +77,86 @@ namespace SneetoApplication
 
         private void TrainTokenList(TokenList tokenList)
         {
-            TrainTokenList(tokenList, GetForwardsTree());
+            var backwardsTokens = GetExisitingTokens(tokenList, GetForwardsRoot());
             tokenList.Invert();
-            TrainTokenList(tokenList, GetBackwardsTree());
+            var forwardsTokens = GetExisitingTokens(tokenList, GetBackwardsRoot());
+
+            if (forwardsTokens.Count == 0)
+            {
+                TrainTokenList(tokenList, GetBackwardsRoot(), backwardsTokens);
+                var forwardsTokenLinks = GetExisitingTokens(tokenList, GetBackwardsRoot());
+                tokenList.Invert();
+                TrainTokenList(tokenList, GetForwardsRoot(), forwardsTokens);
+            }
+            else
+            {
+                tokenList.Invert();
+                TrainTokenList(tokenList, GetForwardsRoot(), forwardsTokens);
+                var backwardsTokenLinks = GetExisitingTokens(tokenList, GetForwardsRoot());
+                tokenList.Invert();
+                TrainTokenList(tokenList, GetBackwardsRoot(), backwardsTokens);
+            }
         }
 
-        private void TrainTokenList(TokenList tokenList, Token currentToken)
+        public List<Token> GetExisitingTokens(TokenList tokenList, Token token)
         {
+            var existingTokens = new List<Token>();
             var nextToken = tokenList.GetEnumerator();
             var hasNextToken = nextToken.MoveNext();
             while (hasNextToken)
             {
-                if (DoesTokenExist(nextToken.Current, currentToken, out var outIndex))
+                if (TokenManager.DoesWordTextExist(nextToken.Current, token, out var outIndex))
+                {
+                    token = TokenManager.GetTokenForID(token.ChildrenTokens[outIndex]);
+                    //Insert at front of list since the reverse training will need to be inverted
+                    existingTokens.Insert(0, token);
+                } else
+                {
+                    break;
+                }
+                hasNextToken = nextToken.MoveNext();
+            }
+            return existingTokens;
+        }
+
+        private void TrainTokenList(TokenList tokenList, Token currentToken, List<Token> existingTokens)
+        {
+            var tokenListTotal = tokenList.Get().Count;
+            var currentTokenCounter = 0;
+            var nextToken = tokenList.GetEnumerator();
+            var hasNextToken = nextToken.MoveNext();
+            while (hasNextToken)
+            {
+                currentTokenCounter++;
+                if (TokenManager.DoesWordTextExist(nextToken.Current, currentToken, out var outIndex))
                 {
                     currentToken = TokenManager.TrainExistingToken(currentToken, outIndex);
                 }
                 else
                 {
-                    currentToken = TokenManager.TrainNewToken(currentToken, nextToken.Current, outIndex);
+                    if (existingTokens.Count > 0
+                        && (existingTokens.Count + currentTokenCounter) == tokenListTotal
+                        && existingTokens[0].WordText.Equals(nextToken.Current))
+                    {
+                        currentToken = TokenManager.ReferenceExistingToken(currentToken, nextToken.Current, outIndex);
+                    }
+                    else
+                    {
+                        currentToken = TokenManager.TrainNewToken(currentToken, nextToken.Current, outIndex);
+                    }
                 }
                 hasNextToken = nextToken.MoveNext();
             }
         }
 
-        public bool DoesTokenExist(string nextToken, Token token, out int outIndex)
+        public Token GetForwardsRoot()
         {
-            outIndex = -1;
-            var children = token.ChildrenTokens;
-            if (children == null || children.Count == 0) return false;
-
-            var startSearchIndex = 0;
-            var currentSearchIndex = 0;
-            var maxSearchIndex = children.Count;
-            Token currentToken;
-
-            while (startSearchIndex != maxSearchIndex)
-            {
-                currentSearchIndex = (maxSearchIndex - startSearchIndex) / 2;
-                currentToken = TokenManager.GetTokenForID(children[currentSearchIndex + startSearchIndex]);
-                if (currentToken.WordText.Equals(nextToken))
-                {
-                    outIndex = currentSearchIndex + startSearchIndex;
-                    return true;
-                }
-
-                if (String.Compare(currentToken.WordText, nextToken) > 0)
-                {
-                    maxSearchIndex = currentSearchIndex + startSearchIndex;
-                }
-                else
-                {
-                    if (currentSearchIndex == 0)
-                    {
-                        currentSearchIndex++;
-                        break;
-                    }
-                    startSearchIndex = currentSearchIndex + startSearchIndex;
-                }
-            }
-            outIndex = currentSearchIndex + startSearchIndex;
-            return false;
+            return forwardsRoot;
         }
 
-        public Token GetForwardsTree()
+        public Token GetBackwardsRoot()
         {
-            return forwardRoot;
-        }
-        
-        public Token GetBackwardsTree()
-        {
-            return backwardRoot;
+            return forwardsRoot;
         }
 
         internal void UpdateUsedWords(TokenList wordList)
