@@ -81,7 +81,7 @@ namespace SneetoApplication
             tokenList.Invert();
             var forwardsTokens = GetExisitingTokens(tokenList, GetBackwardsRoot());
 
-            if (forwardsTokens.Count == 0)
+            if (forwardsTokens.Count == 0 || (backwardsTokens.Count != 0 && backwardsTokens.Count >= forwardsTokens.Count))
             {
                 TrainTokenList(tokenList, GetBackwardsRoot(), backwardsTokens);
                 var forwardsTokenLinks = GetExisitingTokens(tokenList, GetBackwardsRoot());
@@ -98,6 +98,7 @@ namespace SneetoApplication
             }
         }
 
+        //Make unit tests
         public List<Token> GetExisitingTokens(TokenList tokenList, Token token)
         {
             var existingTokens = new List<Token>();
@@ -119,7 +120,8 @@ namespace SneetoApplication
             return existingTokens;
         }
 
-        private void TrainTokenList(TokenList tokenList, Token currentToken, List<Token> existingTokens)
+        //Make unit tests
+        private void TrainTokenList(TokenList tokenList, Token currentToken, List<Token> existingTokens, List<Token> linkedTokens = null)
         {
             var tokenListTotal = tokenList.Get().Count;
             var currentTokenCounter = 0;
@@ -128,7 +130,11 @@ namespace SneetoApplication
             while (hasNextToken)
             {
                 currentTokenCounter++;
-                if (TokenManager.DoesWordTextExist(nextToken.Current, currentToken, out var outIndex))
+                if (linkedTokens.Count > 0)
+                {
+
+                }
+                else if (TokenManager.DoesWordTextExist(nextToken.Current, currentToken, out var outIndex))
                 {
                     currentToken = TokenManager.TrainExistingToken(currentToken, outIndex);
                 }
@@ -138,7 +144,7 @@ namespace SneetoApplication
                         && (existingTokens.Count + currentTokenCounter) == tokenListTotal
                         && existingTokens[0].WordText.Equals(nextToken.Current))
                     {
-                        currentToken = TokenManager.ReferenceExistingToken(currentToken, nextToken.Current, outIndex);
+                        //currentToken = TokenManager.ReferenceExistingToken(currentToken, nextToken.Current, outIndex);
                     }
                     else
                     {
