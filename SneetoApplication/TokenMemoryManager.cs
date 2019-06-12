@@ -121,7 +121,7 @@ namespace SneetoApplication
         }
 
         //Make unit tests
-        private void TrainTokenList(TokenList tokenList, Token currentToken, List<Token> existingTokens, List<Token> linkedTokens = null)
+        public void TrainTokenList(TokenList tokenList, Token currentToken, List<Token> existingTokens, List<Token> linkedTokens = null)
         {
             var tokenListTotal = tokenList.Get().Count;
             var currentTokenCounter = 0;
@@ -130,13 +130,11 @@ namespace SneetoApplication
             while (hasNextToken)
             {
                 currentTokenCounter++;
-                if (linkedTokens.Count > 0)
-                {
-
-                }
-                else if (TokenManager.DoesWordTextExist(nextToken.Current, currentToken, out var outIndex))
+                if (TokenManager.DoesWordTextExist(nextToken.Current, currentToken, out var outIndex))
                 {
                     currentToken = TokenManager.TrainExistingToken(currentToken, outIndex);
+                    if (linkedTokens?.Count > 0)
+                        TokenManager.LinkTokensAndRemoveLastItem(currentToken, linkedTokens);
                 }
                 else
                 {
@@ -149,6 +147,8 @@ namespace SneetoApplication
                     else
                     {
                         currentToken = TokenManager.TrainNewToken(currentToken, nextToken.Current, outIndex);
+                        if (linkedTokens?.Count > 0)
+                            TokenManager.LinkTokensAndRemoveLastItem(currentToken, linkedTokens);
                     }
                 }
                 hasNextToken = nextToken.MoveNext();

@@ -20,6 +20,11 @@ namespace UnitTests.Tests
         Guid thirdGuid;
         Guid fourthGuid;
         Guid fifthGuid;
+
+        Token mainToken;
+        Token firstToken;
+        Token secondToken;
+        Token thirdToken;
         Mock<TokenMemoryManager> mockTokenMemoryManager;
 
         [SetUp]
@@ -39,6 +44,34 @@ namespace UnitTests.Tests
                 thirdGuid,
                 fourthGuid,
                 fifthGuid
+            };
+
+            firstToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "A"
+            };
+
+            secondToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "big"
+            };
+
+            thirdToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "cat"
+            };
+
+            mainToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "root"
             };
 
             var tempToken = new Token();
@@ -83,6 +116,9 @@ namespace UnitTests.Tests
                     }
                 }
             }
+
+            Brain.configuration = new Dictionary<string, string>();
+            Brain.configuration[Brain.USE_DATABASE] = bool.FalseString;
 
             mockTokenMemoryManager = new Mock<TokenMemoryManager> { CallBase = true };
             mockTokenMemoryManager.Setup(mm => mm.SetupManager());
@@ -238,6 +274,63 @@ namespace UnitTests.Tests
 
             var computedList = mockTokenMemoryManager.Object.GetExisitingTokens(tokenList, rootToken);
             Assert.AreEqual(new List<Token>(), computedList);
+        }
+
+        [Test]
+        public void Test_TrainTokenList_NoExistingTokens_NoLinks()
+        {
+            var inputText = new TokenList("A big cat");
+
+            mockTokenMemoryManager.Object.TrainTokenList(inputText, mainToken, new List<Token>());
+
+            Assert.AreEqual(1, mainToken.ChildrenTokens.Count);
+            var nextToken = TokenManager.GetTokenForID(mainToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("A", nextToken.WordText);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("big", nextToken.WordText);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(null, nextToken.ChildrenTokens);
+            Assert.AreEqual("cat", nextToken.WordText);
+        }
+
+        [Test]
+        public void Test_TrainTokenList_NoExistingTokens_WithLinks()
+        {
+            var inputText = new TokenList("A big cat");
+
+            var linkedTokens = new List<Token>();
+            linkedTokens.Add(firstToken);
+            linkedTokens.Add(secondToken);
+            linkedTokens.Add(thirdToken);
+
+            TokenManager.SetTokenForID(firstToken.ID, firstToken);
+            TokenManager.SetTokenForID(secondToken.ID, secondToken);
+            TokenManager.SetTokenForID(thirdToken.ID, thirdToken);
+
+            mockTokenMemoryManager.Object.TrainTokenList(inputText, mainToken, new List<Token>(), linkedTokens);
+
+            Assert.AreEqual(1, mainToken.ChildrenTokens.Count);
+            var nextToken = TokenManager.GetTokenForID(mainToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("A", nextToken.WordText);
+            Assert.AreEqual(thirdToken.ID, nextToken.PartnerID);
+            Assert.AreEqual(nextToken.ID, thirdToken.PartnerID);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("big", nextToken.WordText);
+            Assert.AreEqual(secondToken.ID, nextToken.PartnerID);
+            Assert.AreEqual(nextToken.ID, secondToken.PartnerID);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(null, nextToken.ChildrenTokens);
+            Assert.AreEqual("cat", nextToken.WordText);
+            Assert.AreEqual(firstToken.ID, nextToken.PartnerID);
+            Assert.AreEqual(nextToken.ID, firstToken.PartnerID);
         }
     }
 }
