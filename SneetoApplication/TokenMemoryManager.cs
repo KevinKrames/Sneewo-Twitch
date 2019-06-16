@@ -83,18 +83,18 @@ namespace SneetoApplication
 
             if (forwardsTokens.Count == 0 || (backwardsTokens.Count != 0 && backwardsTokens.Count >= forwardsTokens.Count))
             {
-                TrainTokenList(tokenList, GetBackwardsRoot(), backwardsTokens);
+                TrainTokenList(tokenList, GetBackwardsRoot(), null);
                 var forwardsTokenLinks = GetExisitingTokens(tokenList, GetBackwardsRoot());
                 tokenList.Invert();
-                TrainTokenList(tokenList, GetForwardsRoot(), forwardsTokens);
+                TrainTokenList(tokenList, GetForwardsRoot(), backwardsTokens, forwardsTokenLinks);
             }
             else
             {
                 tokenList.Invert();
-                TrainTokenList(tokenList, GetForwardsRoot(), forwardsTokens);
+                TrainTokenList(tokenList, GetForwardsRoot(), null);
                 var backwardsTokenLinks = GetExisitingTokens(tokenList, GetForwardsRoot());
                 tokenList.Invert();
-                TrainTokenList(tokenList, GetBackwardsRoot(), backwardsTokens);
+                TrainTokenList(tokenList, GetBackwardsRoot(), forwardsTokens, backwardsTokenLinks);
             }
         }
 
@@ -134,7 +134,8 @@ namespace SneetoApplication
                 }
                 else
                 {
-                    if (existingTokens.Count > 0
+                    if (existingTokens != null
+                        && existingTokens.Count > 0
                         && (existingTokens.Count + currentTokenCounter-1) == tokenListTotal
                         && existingTokens[0].WordText.Equals(nextToken.Current))
                     {
@@ -159,7 +160,7 @@ namespace SneetoApplication
 
         public Token GetBackwardsRoot()
         {
-            return forwardsRoot;
+            return backwardsRoot;
         }
 
         internal void UpdateUsedWords(TokenList wordList)

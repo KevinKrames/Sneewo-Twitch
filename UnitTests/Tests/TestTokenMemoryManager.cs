@@ -22,6 +22,7 @@ namespace UnitTests.Tests
         Guid fifthGuid;
 
         Token mainToken;
+        Token backwardsMainToken;
         Token firstToken;
         Token secondToken;
         Token thirdToken;
@@ -73,6 +74,16 @@ namespace UnitTests.Tests
                 ChildrenTokens = new List<Guid>(),
                 WordText = "root"
             };
+
+            backwardsMainToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "backwardsRoot"
+            };
+
+            TokenManager.SetTokenForID(mainToken.ID, mainToken);
+            TokenManager.SetTokenForID(backwardsMainToken.ID, backwardsMainToken);
 
             var tempToken = new Token();
             tempToken.ID = firstGuid;
@@ -484,6 +495,32 @@ namespace UnitTests.Tests
             Assert.AreEqual(thirdToken.PartnerID, nextToken.PartnerID);
             Assert.AreEqual(thirdToken.PartnerID, thirdLink.ID);
             Assert.AreEqual(thirdLink.PartnerID, thirdToken.ID);
+        }
+
+        [Test]
+        public void Test_TrainTokenList_TrainsPartnersCorrectly()
+        {
+            var inputText = new TokenList("An interesting new sentence.");
+            mockTokenMemoryManager.Object.TrainTokenList(inputText, mainToken, null);
+            var existingTokens = mockTokenMemoryManager.Object.GetExisitingTokens(inputText, mainToken);
+            var linkedTokens = mockTokenMemoryManager.Object.GetExisitingTokens(inputText, mainToken);
+
+            inputText.Invert();
+            mockTokenMemoryManager.Object.TrainTokenList(inputText, backwardsMainToken, null, linkedTokens);
+            var existingBackwardsTokens = mockTokenMemoryManager.Object.GetExisitingTokens(inputText, backwardsMainToken);
+
+            var inputText2 = new TokenList("An interesting old sentence.");
+            mockTokenMemoryManager.Object.TrainTokenList(inputText2, mainToken, null);
+            linkedTokens = mockTokenMemoryManager.Object.GetExisitingTokens(inputText, mainToken);
+            inputText.Invert();
+            mockTokenMemoryManager.Object.TrainTokenList(inputText2, backwardsMainToken, null, linkedTokens);
+
+            existingBackwardsTokens.Reverse();
+            for (var i = 0; i < existingTokens.Count; i++)
+            {
+                Assert.AreEqual(existingTokens[i].PartnerID, existingBackwardsTokens[i].ID);
+                Assert.AreEqual(existingBackwardsTokens[i].PartnerID, existingTokens[i].ID);
+            }
         }
     }
 }
