@@ -75,6 +75,25 @@ namespace SneetoApplication
             }
         }
 
+        public bool IsValidSentence(TokenList tokenList)
+        {
+            foreach (var badWord in Brain.badWords)
+            {
+                if (badWord.Length == 0 || badWord[0] == '#') continue;
+
+                if (badWord[0] == '*')
+                {
+                    tokenList.DoesContainAnyFormOfString(badWord.Substring(1));
+                }
+                else if (tokenList.DoesContainWord(badWord))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private void TrainTokenList(TokenList tokenList)
         {
             var backwardsTokens = GetExisitingTokens(tokenList, GetForwardsRoot());

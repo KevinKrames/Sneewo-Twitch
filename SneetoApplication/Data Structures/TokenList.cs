@@ -43,6 +43,13 @@ namespace SneetoApplication.Data_Structures
             wordList.Add(word);
         }
 
+        public bool DoesContainWord(string word)
+        {
+            var wordLower = word.ToLower();
+            var match = wordList.Select(w => w.ToLower().Equals(wordLower)).ToList();
+            return match.Count > 0;
+        }
+
         public IEnumerator<string> GetEnumerator()
         {
             foreach (var word in wordList)
@@ -54,6 +61,13 @@ namespace SneetoApplication.Data_Structures
         IEnumerator IEnumerable.GetEnumerator()
         {
             throw new NotImplementedException();
+        }
+
+        public bool DoesContainAnyFormOfString(string word)
+        {
+            var wordLower = word.ToLower();
+            var match = wordList.Select(w => w.ToLower().Contains(wordLower)).ToList();
+            return match.Count > 0;
         }
     }
 }

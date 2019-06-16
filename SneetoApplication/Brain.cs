@@ -11,9 +11,11 @@ namespace SneetoApplication
     {
         public static Dictionary<string, string> configuration;
         public static List<string> badWords;
+        public static List<string> smallWords;
         public static readonly string USE_DATABASE = "useDatabase";
         public static readonly string config = "configuration.json";
         public static readonly string badWordsFile = "badWords.txt";
+        public static readonly string smallWordsFile = "smallWords.txt";
         public static Form1 form;
 
         private TokenMemoryManager tokenMemoryManager;
@@ -22,6 +24,7 @@ namespace SneetoApplication
             form = form1;
             configuration = Utilities.Utilities.loadDictionaryFromJsonFile(config);
             badWords = Utilities.Utilities.loadListFromTextFile(badWordsFile);
+            smallWords = Utilities.Utilities.loadListFromTextFile(smallWordsFile);
             tokenMemoryManager = new TokenMemoryManager();
         }
 
