@@ -33,6 +33,8 @@
             this.button3 = new System.Windows.Forms.Button();
             this.consoleTextBox = new System.Windows.Forms.RichTextBox();
             this.button4 = new System.Windows.Forms.Button();
+            this.stemBox = new System.Windows.Forms.TextBox();
+            this.stemButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // button1
@@ -84,11 +86,30 @@
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
+            // stemBox
+            // 
+            this.stemBox.Location = new System.Drawing.Point(12, 65);
+            this.stemBox.Name = "stemBox";
+            this.stemBox.Size = new System.Drawing.Size(139, 20);
+            this.stemBox.TabIndex = 5;
+            // 
+            // stemButton
+            // 
+            this.stemButton.Location = new System.Drawing.Point(13, 92);
+            this.stemButton.Name = "stemButton";
+            this.stemButton.Size = new System.Drawing.Size(75, 23);
+            this.stemButton.TabIndex = 6;
+            this.stemButton.Text = "Get Stem";
+            this.stemButton.UseVisualStyleBackColor = true;
+            this.stemButton.Click += new System.EventHandler(this.stemButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(514, 372);
+            this.Controls.Add(this.stemButton);
+            this.Controls.Add(this.stemBox);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.consoleTextBox);
             this.Controls.Add(this.button3);
@@ -98,6 +119,7 @@
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -108,6 +130,8 @@
         private System.Windows.Forms.Button button3;
         public System.Windows.Forms.RichTextBox consoleTextBox;
         private System.Windows.Forms.Button button4;
+        private System.Windows.Forms.TextBox stemBox;
+        private System.Windows.Forms.Button stemButton;
     }
 }
 

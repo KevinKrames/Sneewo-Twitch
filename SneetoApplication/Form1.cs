@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SneetoApplication.Data_Structures;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -94,6 +95,17 @@ namespace SneetoApplication
         private void button4_Click(object sender, EventArgs e)
         {
             consoleTextBox.AppendText(brain.GenerateRandomSentence() + "\n");
+        }
+
+        private void stemButton_Click(object sender, EventArgs e)
+        {
+            var stem = stemBox.Text;
+            var tokens = StemManager.GetTokensForUnstemmedWord(stem);
+
+            foreach(var token in tokens)
+            {
+                consoleTextBox.AppendText(token.WordText + "\n");
+            }
         }
     }
 }

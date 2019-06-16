@@ -14,13 +14,24 @@ namespace SneetoApplication.Data_Structures
         public static IStemmer Stemmer = new EnglishStemmer();
         public static Regex specialCharactersRegex = new Regex("[^a-zA-Z0-9 -]");
 
+        public static void ClearStems()
+        {
+            StemDictionary = new Dictionary<string, Stem>();
+        }
+
+        public static string GetStemForToken(string text)
+        {
+            var filteredText = specialCharactersRegex.Replace(text, "").ToLower();
+            return Stemmer.GetSteamWord(filteredText);
+        }
+
         public static void AddToken(Token token)
         {
-            var filteredText = specialCharactersRegex.Replace(token.WordText, "").ToLower();
-            var stemText = Stemmer.GetSteamWord(filteredText);
+            var stemText = GetStemForToken(token.WordText);
             if (StemDictionary.TryGetValue(stemText, out Stem stem))
             {
-                stem.stemTokens.Add(token.ID);
+                if (!stem.stemTokens.Contains(token.ID))
+                    stem.stemTokens.Add(token.ID);
             }
             else
             {
@@ -29,6 +40,25 @@ namespace SneetoApplication.Data_Structures
                 StemDictionary[stemText].stemTokens = new List<Guid>();
                 StemDictionary[stemText].stemTokens.Add(token.ID);
             }
+        }
+
+        public static List<Guid> GetGuidsForUnstemmedWord(string word)
+        {
+            var stemText = GetStemForToken(word);
+            if (StemDictionary.TryGetValue(stemText, out Stem stem))
+            {
+                if (stem.stemTokens != null && stem.stemTokens.Count > 0)
+                    return stem.stemTokens;
+            }
+            return null;
+        }
+
+        public static List<Token> GetTokensForUnstemmedWord(string word)
+        {
+            var guids = GetGuidsForUnstemmedWord(word);
+            if (guids == null) return null;
+
+            return guids.Select(g => TokenManager.GetTokenForID(g)).ToList();
         }
     }
 }
