@@ -100,12 +100,23 @@ namespace SneetoApplication.Data_Structures
             return false;
         }
 
-        internal static void LinkTokensAndRemoveLastItem(Token currentToken, List<Token> linkedTokens)
+        internal static void LinkTokensAndRemoveFirstItem(Token currentToken, List<Token> linkedTokens)
         {
-            var partner = linkedTokens[linkedTokens.Count - 1];
+            var partner = linkedTokens[0];
             currentToken.PartnerID = partner.ID;
             partner.PartnerID = currentToken.ID;
-            linkedTokens.RemoveAt(linkedTokens.Count - 1);
+            linkedTokens.RemoveAt(0);
+        }
+
+        public static Token TrainReferenceExistingToken(Token parentToken, Token existingToken, int outIndex)
+        {
+            if (parentToken.ChildrenTokens == null || parentToken.ChildrenTokens.Count == 0)
+            {
+                parentToken.ChildrenTokens = new List<Guid>();
+                outIndex = 0;
+            }
+            parentToken.ChildrenTokens.Insert(outIndex, existingToken.ID);
+            return existingToken;
         }
     }
 }

@@ -317,8 +317,8 @@ namespace UnitTests.Tests
             var nextToken = TokenManager.GetTokenForID(mainToken.ChildrenTokens[0]);
             Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
             Assert.AreEqual("A", nextToken.WordText);
-            Assert.AreEqual(thirdToken.ID, nextToken.PartnerID);
-            Assert.AreEqual(nextToken.ID, thirdToken.PartnerID);
+            Assert.AreEqual(firstToken.ID, nextToken.PartnerID);
+            Assert.AreEqual(nextToken.ID, firstToken.PartnerID);
 
             nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
             Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
@@ -329,8 +329,161 @@ namespace UnitTests.Tests
             nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
             Assert.AreEqual(null, nextToken.ChildrenTokens);
             Assert.AreEqual("cat", nextToken.WordText);
-            Assert.AreEqual(firstToken.ID, nextToken.PartnerID);
-            Assert.AreEqual(nextToken.ID, firstToken.PartnerID);
+            Assert.AreEqual(thirdToken.ID, nextToken.PartnerID);
+            Assert.AreEqual(nextToken.ID, thirdToken.PartnerID);
+        }
+
+        [Test]
+        public void Test_TrainTokenList_ExistingTokens_NoLinks()
+        {
+            firstToken.WordText = "big";
+            secondToken.WordText = "old";
+            thirdToken.WordText = "big";
+
+            var existingToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                WordText = "big"
+            };
+
+            var reverseExistingToken = new Token
+            {
+                ID = Guid.NewGuid(),
+                WordText = "big"
+            };
+            existingToken.PartnerID = reverseExistingToken.ID;
+            reverseExistingToken.PartnerID = existingToken.ID;
+
+            TokenManager.SetTokenForID(existingToken.ID, existingToken);
+            TokenManager.SetTokenForID(reverseExistingToken.ID, reverseExistingToken);
+
+            var existingTokens = new List<Token> { existingToken };
+            var inputText = new TokenList("big old big");
+
+            mockTokenMemoryManager.Object.TrainTokenList(inputText, mainToken, existingTokens);
+
+            Assert.AreEqual(1, mainToken.ChildrenTokens.Count);
+            var nextToken = TokenManager.GetTokenForID(mainToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("big", nextToken.WordText);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("old", nextToken.WordText);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(null, nextToken.ChildrenTokens);
+            Assert.AreEqual("big", nextToken.WordText);
+            Assert.AreEqual(existingToken.ID, nextToken.ID);
+            Assert.AreEqual(existingToken.PartnerID, nextToken.PartnerID);
+        }
+
+        [Test]
+        public void Test_TrainTokenList_AllExistingTokens_NoLinks()
+        {
+            firstToken.WordText = "large";
+            secondToken.WordText = "old";
+            thirdToken.WordText = "big";
+
+            var existingTokens = new List<Token> { firstToken, secondToken, thirdToken };
+            var inputText = new TokenList("large old big");
+
+            TokenManager.SetTokenForID(firstToken.ID, firstToken);
+            TokenManager.SetTokenForID(secondToken.ID, secondToken);
+            TokenManager.SetTokenForID(thirdToken.ID, thirdToken);
+
+            mockTokenMemoryManager.Object.TrainTokenList(inputText, mainToken, existingTokens);
+
+            Assert.AreEqual(1, mainToken.ChildrenTokens.Count);
+            var nextToken = TokenManager.GetTokenForID(mainToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("large", nextToken.WordText);
+            Assert.AreEqual(firstToken.ID, nextToken.ID);
+            Assert.AreEqual(firstToken.PartnerID, nextToken.PartnerID);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("old", nextToken.WordText);
+            Assert.AreEqual(secondToken.ID, nextToken.ID);
+            Assert.AreEqual(secondToken.PartnerID, nextToken.PartnerID);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(0, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("big", nextToken.WordText);
+            Assert.AreEqual(thirdToken.ID, nextToken.ID);
+            Assert.AreEqual(thirdToken.PartnerID, nextToken.PartnerID);
+        }
+
+        [Test]
+        public void Test_TrainTokenList_AllExistingTokens_WithLinks()
+        {
+            firstToken.WordText = "large";
+            secondToken.WordText = "old";
+            thirdToken.WordText = "big";
+
+            var firstLink = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "large"
+            };
+
+            var secondLink = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "old"
+            };
+
+            var thirdLink = new Token
+            {
+                ID = Guid.NewGuid(),
+                ChildrenTokens = new List<Guid>(),
+                WordText = "big"
+            };
+
+            var linkedTokens = new List<Token>();
+            linkedTokens.Add(firstLink);
+            linkedTokens.Add(secondLink);
+            linkedTokens.Add(thirdLink);
+
+            TokenManager.SetTokenForID(firstLink.ID, firstLink);
+            TokenManager.SetTokenForID(secondLink.ID, secondLink);
+            TokenManager.SetTokenForID(thirdLink.ID, thirdLink);
+
+            var existingTokens = new List<Token> { firstToken, secondToken, thirdToken };
+            var inputText = new TokenList("large old big");
+
+            TokenManager.SetTokenForID(firstToken.ID, firstToken);
+            TokenManager.SetTokenForID(secondToken.ID, secondToken);
+            TokenManager.SetTokenForID(thirdToken.ID, thirdToken);
+
+            mockTokenMemoryManager.Object.TrainTokenList(inputText, mainToken, existingTokens, linkedTokens);
+
+            Assert.AreEqual(1, mainToken.ChildrenTokens.Count);
+            var nextToken = TokenManager.GetTokenForID(mainToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("large", nextToken.WordText);
+            Assert.AreEqual(firstToken.ID, nextToken.ID);
+            Assert.AreEqual(firstToken.PartnerID, nextToken.PartnerID);
+            Assert.AreEqual(firstToken.PartnerID, firstLink.ID);
+            Assert.AreEqual(firstLink.PartnerID, firstToken.ID);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(1, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("old", nextToken.WordText);
+            Assert.AreEqual(secondToken.ID, nextToken.ID);
+            Assert.AreEqual(secondToken.PartnerID, nextToken.PartnerID);
+            Assert.AreEqual(secondToken.PartnerID, secondLink.ID);
+            Assert.AreEqual(secondLink.PartnerID, secondToken.ID);
+
+            nextToken = TokenManager.GetTokenForID(nextToken.ChildrenTokens[0]);
+            Assert.AreEqual(0, nextToken.ChildrenTokens.Count);
+            Assert.AreEqual("big", nextToken.WordText);
+            Assert.AreEqual(thirdToken.ID, nextToken.ID);
+            Assert.AreEqual(thirdToken.PartnerID, nextToken.PartnerID);
+            Assert.AreEqual(thirdToken.PartnerID, thirdLink.ID);
+            Assert.AreEqual(thirdLink.PartnerID, thirdToken.ID);
         }
     }
 }

@@ -98,7 +98,6 @@ namespace SneetoApplication
             }
         }
 
-        //Make unit tests
         public List<Token> GetExisitingTokens(TokenList tokenList, Token token)
         {
             var existingTokens = new List<Token>();
@@ -120,7 +119,6 @@ namespace SneetoApplication
             return existingTokens;
         }
 
-        //Make unit tests
         public void TrainTokenList(TokenList tokenList, Token currentToken, List<Token> existingTokens, List<Token> linkedTokens = null)
         {
             var tokenListTotal = tokenList.Get().Count;
@@ -133,24 +131,23 @@ namespace SneetoApplication
                 if (TokenManager.DoesWordTextExist(nextToken.Current, currentToken, out var outIndex))
                 {
                     currentToken = TokenManager.TrainExistingToken(currentToken, outIndex);
-                    if (linkedTokens?.Count > 0)
-                        TokenManager.LinkTokensAndRemoveLastItem(currentToken, linkedTokens);
                 }
                 else
                 {
                     if (existingTokens.Count > 0
-                        && (existingTokens.Count + currentTokenCounter) == tokenListTotal
+                        && (existingTokens.Count + currentTokenCounter-1) == tokenListTotal
                         && existingTokens[0].WordText.Equals(nextToken.Current))
                     {
-                        //currentToken = TokenManager.ReferenceExistingToken(currentToken, nextToken.Current, outIndex);
+                        currentToken = TokenManager.TrainReferenceExistingToken(currentToken, existingTokens[0], outIndex);
+                        existingTokens.RemoveAt(0);
                     }
                     else
                     {
                         currentToken = TokenManager.TrainNewToken(currentToken, nextToken.Current, outIndex);
-                        if (linkedTokens?.Count > 0)
-                            TokenManager.LinkTokensAndRemoveLastItem(currentToken, linkedTokens);
                     }
                 }
+                if (linkedTokens?.Count > 0)
+                    TokenManager.LinkTokensAndRemoveFirstItem(currentToken, linkedTokens);
                 hasNextToken = nextToken.MoveNext();
             }
         }
