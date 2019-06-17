@@ -522,5 +522,23 @@ namespace UnitTests.Tests
                 Assert.AreEqual(existingBackwardsTokens[i].PartnerID, existingTokens[i].ID);
             }
         }
+
+        [Test]
+        public void Test_TrainTokenList_InfiniteLoopCheck()
+        {
+            var inputText = new TokenList("Kappa");
+            mockTokenMemoryManager.Object.SetForwardsRoot(mainToken);
+            mockTokenMemoryManager.Object.SetBackwardsRoot(backwardsMainToken);
+
+            mockTokenMemoryManager.Object.TrainTokenList(inputText);
+
+            inputText = new TokenList("Kappa Kappa Kappa Kappa");
+            
+            mockTokenMemoryManager.Object.TrainTokenList(inputText);
+
+            var existingObjects = mockTokenMemoryManager.Object.GetExisitingTokens(inputText, mainToken);
+
+            Assert.AreNotEqual(existingObjects[0], existingObjects[3]);
+        }
     }
 }

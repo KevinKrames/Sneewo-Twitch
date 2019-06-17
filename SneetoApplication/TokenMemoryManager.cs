@@ -94,7 +94,7 @@ namespace SneetoApplication
             return true;
         }
 
-        private void TrainTokenList(TokenList tokenList)
+        public void TrainTokenList(TokenList tokenList)
         {
             var backwardsTokens = GetExisitingTokens(tokenList, GetForwardsRoot());
             tokenList.Invert();
@@ -180,6 +180,16 @@ namespace SneetoApplication
         public Token GetBackwardsRoot()
         {
             return backwardsRoot;
+        }
+
+        public void SetForwardsRoot(Token token)
+        {
+            forwardsRoot = token;
+        }
+
+        public void SetBackwardsRoot(Token token)
+        {
+            backwardsRoot = token;
         }
 
         internal void UpdateUsedWords(TokenList wordList)
