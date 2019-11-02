@@ -67,7 +67,10 @@ namespace SneetoApplication
                     var message = new TokenList(Utilities.Utilities.jsonUnserialize(data)["message"]);
                     if (TrainSingleSentence(message)) linesTrained++;
 
-                    if (linesTrained % 10000 == 0) { Brain.form.consoleTextBox.AppendText($"Trained: {linesTrained}\n"); }
+                    if (linesTrained % 10000 == 0) {
+                        Brain.form.consoleTextBox.AppendText($"Trained: {linesTrained}\n");
+                        if (linesTrained == 20000) break;
+                    }
                 }
             }
             catch (Exception e)

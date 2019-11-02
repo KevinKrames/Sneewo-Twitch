@@ -20,6 +20,7 @@ namespace SneetoApplication
         {
             InitializeComponent();
             brain = new Brain(this);
+            UIManager.Instance.setForm(this);
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -106,6 +107,11 @@ namespace SneetoApplication
             {
                 consoleTextBox.AppendText(token.WordText + "\n");
             }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            UIManager.Instance.Update();
         }
     }
 }

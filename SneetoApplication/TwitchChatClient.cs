@@ -42,12 +42,17 @@ namespace SneetoApplication
             twitchClient.Initialize(credentials, "Moltov");
 
             twitchClient.OnJoinedChannel += onJoinedChannel;
+            twitchClient.OnMessageReceived += onMessageReceived;
         }
 
         private void onJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
-            Console.WriteLine("Hey guys! I am a bot connected via TwitchLib!");
-            twitchClient.SendMessage(e.Channel, "Hey guys! I am a bot connected via TwitchLib!");
+            UIManager.Instance.printMessage($"Connected to channel: {e.Channel}");
+        }
+
+        private void onMessageReceived(object sender, OnMessageReceivedArgs e)
+        {
+            UIManager.Instance.printMessage(e);
         }
 
         public TwitchChatClient() : this(new TwitchClient()) {}
