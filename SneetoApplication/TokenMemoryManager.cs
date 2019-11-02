@@ -58,13 +58,15 @@ namespace SneetoApplication
                 StreamReader sr = new StreamReader(Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\" + DATA_FILE_NAME);
                 while (!sr.EndOfStream)
                 {
-                    linesTrained++;
                     data = sr.ReadLine();
                     if (data[data.Length-1] == ',')
                     {
                         data = data.Substring(0, data.Length - 1);
                     }
-                    TrainTokenList(new TokenList(Utilities.Utilities.jsonUnserialize(data)["message"]));
+
+                    var message = new TokenList(Utilities.Utilities.jsonUnserialize(data)["message"]);
+                    if (TrainSingleSentence(message)) linesTrained++;
+
                     if (linesTrained % 10000 == 0) { Brain.form.consoleTextBox.AppendText($"Trained: {linesTrained}\n"); }
                 }
             }
@@ -75,6 +77,13 @@ namespace SneetoApplication
             }
         }
 
+        public bool TrainSingleSentence(TokenList tokenList)
+        {
+            if (!IsValidSentence(tokenList)) return false;
+            TrainTokenList(tokenList);
+            return true;
+        }
+
         public bool IsValidSentence(TokenList tokenList)
         {
             foreach (var badWord in Brain.badWords)
@@ -83,7 +92,8 @@ namespace SneetoApplication
 
                 if (badWord[0] == '*')
                 {
-                    tokenList.DoesContainAnyFormOfString(badWord.Substring(1));
+                    var temp = tokenList.DoesContainAnyFormOfString(badWord.Substring(1));
+                    if (temp) return false;
                 }
                 else if (tokenList.DoesContainWord(badWord))
                 {
@@ -150,6 +160,11 @@ namespace SneetoApplication
                 if (TokenManager.DoesWordTextExist(nextToken.Current, currentToken, out var outIndex))
                 {
                     currentToken = TokenManager.TrainExistingToken(currentToken, outIndex);
+
+                    if (existingTokens != null && existingTokens.Contains(currentToken))
+                    {
+                        existingTokens = null;
+                    }
                 }
                 else
                 {

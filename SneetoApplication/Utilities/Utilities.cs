@@ -37,8 +37,11 @@ namespace SneetoApplication.Utilities
             try
             {
                 StreamReader sr = new StreamReader(Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\" + v);
-                data = sr.ReadToEnd();
-                newList.Add(data);
+                var newLine = "";
+                while ((newLine = sr.ReadLine()) != null)
+                {
+                    newList.Add(newLine);
+                }
             }
             catch (Exception e)
             {

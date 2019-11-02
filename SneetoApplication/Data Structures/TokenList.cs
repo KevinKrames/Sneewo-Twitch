@@ -45,8 +45,8 @@ namespace SneetoApplication.Data_Structures
 
         public bool DoesContainWord(string word)
         {
-            var wordLower = word.ToLower();
-            var match = wordList.Select(w => w.ToLower().Equals(wordLower)).ToList();
+            var wordLower = word.ToLower().Trim();
+            var match = wordList.Where(w => w.ToLower().Trim().Equals(wordLower)).ToList();
             return match.Count > 0;
         }
 
@@ -65,8 +65,8 @@ namespace SneetoApplication.Data_Structures
 
         public bool DoesContainAnyFormOfString(string word)
         {
-            var wordLower = word.ToLower();
-            var match = wordList.Select(w => w.ToLower().Contains(wordLower)).ToList();
+            var wordLower = word.ToLower().Trim();
+            var match = wordList.Where(w => w.ToLower().Trim().Contains(wordLower)).ToList();
             return match.Count > 0;
         }
     }
