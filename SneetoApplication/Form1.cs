@@ -95,7 +95,7 @@ namespace SneetoApplication
 
         private void button4_Click(object sender, EventArgs e)
         {
-            consoleTextBox.AppendText(brain.GenerateRandomSentence() + "\n");
+            //consoleTextBox.AppendText(brain.GenerateRandomSentence() + "\n");
         }
 
         private void stemButton_Click(object sender, EventArgs e)
@@ -112,6 +112,8 @@ namespace SneetoApplication
         private void timer1_Tick(object sender, EventArgs e)
         {
             UIManager.Instance.Update();
+            ChannelManager.Instance.Update();
+            Brain.Instance.Update();
         }
     }
 }

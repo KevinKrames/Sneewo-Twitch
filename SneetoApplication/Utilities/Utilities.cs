@@ -83,5 +83,10 @@ namespace SneetoApplication.Utilities
         {
             return random.NextDouble();
         }
+
+        internal static int RandomZeroToNumberMinusOne(int number)
+        {
+            return RandomOneToNumber(number) - 1;
+        }
     }
 }

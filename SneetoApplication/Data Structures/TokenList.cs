@@ -33,6 +33,11 @@ namespace SneetoApplication.Data_Structures
             return wordList;
         }
 
+        public string Get(int index)
+        {
+            return wordList[index];
+        }
+
         public string GetString()
         {
             return String.Join(" ", wordList);
@@ -68,6 +73,11 @@ namespace SneetoApplication.Data_Structures
             var wordLower = word.ToLower().Trim();
             var match = wordList.Where(w => w.ToLower().Trim().Contains(wordLower)).ToList();
             return match.Count > 0;
+        }
+
+        public List<string> GetMajorWords()
+        {
+            return wordList.Where(w => !Brain.smallWords.Contains(w.ToLower().Trim())).ToList();
         }
     }
 }

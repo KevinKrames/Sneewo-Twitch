@@ -69,7 +69,7 @@ namespace SneetoApplication
 
                     if (linesTrained % 10000 == 0) {
                         Brain.form.consoleTextBox.AppendText($"Trained: {linesTrained}\n");
-                        if (linesTrained == 20000) break;
+                        //if (linesTrained == 20000) break;
                     }
                 }
             }

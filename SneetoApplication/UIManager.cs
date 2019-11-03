@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SneetoApplication.Data_Structures;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,6 +56,11 @@ namespace SneetoApplication
         public void printMessage(OnMessageReceivedArgs e)
         {
             messagesToAppend.Enqueue($"#{e.ChatMessage.Channel} {e.ChatMessage.Username}: {e.ChatMessage.Message}");
+        }
+
+        internal void SendMessage(string channel, string sentence)
+        {
+            messagesToAppend.Enqueue($"#{channel} {TwitchCredentials.Instance.twitchUsername}: {sentence}");
         }
     }
 }
