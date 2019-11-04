@@ -37,6 +37,7 @@ namespace SneetoApplication.Data_Structures
                 var token = new Token();
                 token.ID = Guid.NewGuid();
                 token.WordText = newTokenText;
+                if (parentToken != null) token.reverse = parentToken.reverse;
                 SetTokenForID(token.ID, token);
 
                 if (!token.WordText.Equals("<start>") && !token.WordText.Equals("<end>"))

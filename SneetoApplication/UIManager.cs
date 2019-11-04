@@ -40,6 +40,8 @@ namespace SneetoApplication
             while (messagesToAppend.TryDequeue(out string value))
             {
                 form.consoleTextBox.AppendText(value + "\n");
+                form.consoleTextBox.SelectionStart = form.consoleTextBox.Text.Length;
+                form.consoleTextBox.ScrollToCaret();
             }
         }
 

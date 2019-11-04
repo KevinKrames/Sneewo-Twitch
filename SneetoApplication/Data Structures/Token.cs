@@ -10,8 +10,8 @@ namespace SneetoApplication.Data_Structures
     {
         public string WordText;
         public Guid ID;
-        public Guid StemID;
         public Guid PartnerID;
         public List<Guid> ChildrenTokens;
+        public bool reverse;
     }
 }

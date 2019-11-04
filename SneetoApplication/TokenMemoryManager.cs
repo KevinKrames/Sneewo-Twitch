@@ -44,7 +44,9 @@ namespace SneetoApplication
             } else
             {
                 forwardsRoot = TokenManager.TrainNewToken(null, "<start>", -1);
+                forwardsRoot.reverse = false;
                 backwardsRoot = TokenManager.TrainNewToken(null, "<end>", -1);
+                backwardsRoot.reverse = true;
                 TrainFromFile();
             }
         }

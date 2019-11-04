@@ -100,31 +100,26 @@ namespace SneetoApplication
             var tokens = StemManager.GetTokensForUnstemmedWord(word);
             if (tokens == null || tokens.Count == 0) { return null; }
             var token = tokens[Utilities.Utilities.RandomZeroToNumberMinusOne(tokens.Count)];
+
+            if (token.reverse) token = TokenManager.GetTokenForID(token.PartnerID);
             var reverseToken = TokenManager.GetTokenForID(token.PartnerID);
 
             return $"{GetNextRandomTokenString(reverseToken, true)} {token.WordText} {GetNextRandomTokenString(token, false)}";
         }
 
-        private string GetNextRandomTokenString(Token token, bool reverse, bool first = true)
+        private string GetNextRandomTokenString(Token token, bool reverse)
         {
             if (token.ChildrenTokens == null) return "";
 
             var number = Utilities.Utilities.RandomZeroToNumberMinusOne(token.ChildrenTokens.Count);
             Token tempToken = TokenManager.GetTokenForID(token.ChildrenTokens[number]);
-
-            if (first)
+            
+            if (reverse)
             {
-                return GetNextRandomTokenString(tempToken, reverse, false);
-            }
-            else
+                return GetNextRandomTokenString(tempToken, reverse) + " " + tempToken.WordText;
+            } else
             {
-                if (reverse)
-                {
-                    return GetNextRandomTokenString(tempToken, reverse, false) + " " + tempToken.WordText;
-                } else
-                {
-                    return tempToken.WordText + " " + GetNextRandomTokenString(tempToken, reverse, false);
-                }
+                return tempToken.WordText + " " + GetNextRandomTokenString(tempToken, reverse);
             }
         }
     }
