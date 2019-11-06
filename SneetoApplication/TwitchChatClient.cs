@@ -34,15 +34,23 @@ namespace SneetoApplication
             }
         }
 
+        public bool IsConnected {
+            get {
+                if (twitchClient == null) return false;
+                return twitchClient.IsConnected;
+            }
+        }
+
         public TwitchChatClient(ITwitchClient client)
         {
             twitchCredentials = TwitchCredentials.Instance;
             ConnectionCredentials credentials = new ConnectionCredentials(twitchCredentials.twitchUsername, twitchCredentials.twitchOAuth);
             twitchClient = client;
-            twitchClient.Initialize(credentials, "Moltov");
+            twitchClient.Initialize(credentials);
 
             twitchClient.OnJoinedChannel += onJoinedChannel;
             twitchClient.OnMessageReceived += onMessageReceived;
+            twitchClient.OnChatCommandReceived += OnChatCommandReceived;
         }
 
         public void sendMessage(string channel, string message)
@@ -53,13 +61,27 @@ namespace SneetoApplication
 
         private void onJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
-            ChannelManager.Instance.AddChannel(e);
+        }
+
+        private void OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
+        {
+            CommandManager.Instance.channelEventsToProcess.Enqueue(e);
         }
 
         private void onMessageReceived(object sender, OnMessageReceivedArgs e)
         {
             UIManager.Instance.printMessage(e);
             Brain.Instance.messagesToProcess.Enqueue(e);
+        }
+
+        public void JoinChannel(string channel)
+        {
+            twitchClient.JoinChannel(channel);
+        }
+
+        public void LeaveChannel(string channel)
+        {
+            twitchClient.LeaveChannel(channel);
         }
 
         public TwitchChatClient() : this(new TwitchClient()) {}

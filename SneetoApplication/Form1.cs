@@ -76,6 +76,7 @@ namespace SneetoApplication
                     Utilities.Utilities.WriteLineToFile(Utilities.Utilities.jsonSerialize(dictionary) + ",", TokenMemoryManager.DATA_FILE_NAME);
                     System.Console.WriteLine(@"{channel}, {platform}, {time}, {user}, {message}");
                 }
+                sr.Close();
             }
             catch (Exception ex)
             {
@@ -113,6 +114,7 @@ namespace SneetoApplication
         {
             UIManager.Instance.Update();
             ChannelManager.Instance.Update();
+            CommandManager.Instance.Update();
             Brain.Instance.Update();
         }
     }

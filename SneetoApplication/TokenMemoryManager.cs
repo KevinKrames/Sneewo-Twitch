@@ -74,6 +74,7 @@ namespace SneetoApplication
                         //if (linesTrained == 20000) break;
                     }
                 }
+                sr.Close();
             }
             catch (Exception e)
             {

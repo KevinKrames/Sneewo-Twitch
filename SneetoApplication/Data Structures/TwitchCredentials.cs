@@ -30,7 +30,7 @@ namespace SneetoApplication.Data_Structures
 
         public TwitchCredentials()
         {
-            var data = Utilities.Utilities.loadDictionaryFromJsonFile("twitch_credentials.json");
+            var data = (Dictionary<string, string>)Utilities.Utilities.loadDictionaryFromJsonFile<string, string>("twitch_credentials.json");
 
             if (data == null) return;
 

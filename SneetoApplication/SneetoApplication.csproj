@@ -186,6 +186,10 @@
     <Compile Include="Brain.cs" />
     <Compile Include="Channel.cs" />
     <Compile Include="ChannelManager.cs" />
+    <Compile Include="CommandManager.cs" />
+    <Compile Include="Commands\Command.cs" />
+    <Compile Include="Commands\LeaveCommand .cs" />
+    <Compile Include="Commands\JoinCommand.cs" />
     <Compile Include="Data Structures\Stem.cs" />
     <Compile Include="Data Structures\StemManager.cs" />
     <Compile Include="Data Structures\TokenManager.cs" />
@@ -199,6 +203,8 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="MessageLog.cs" />
+    <Compile Include="QueuedMessage.cs" />
     <Compile Include="TokenMemoryManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

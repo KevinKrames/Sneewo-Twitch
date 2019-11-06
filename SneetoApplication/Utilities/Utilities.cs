@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using SneetoApplication.Data_Structures;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
@@ -25,9 +26,9 @@ namespace SneetoApplication.Utilities
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
         }
 
-        public static Dictionary<string, string> loadDictionaryFromJsonFile(string fileName)
+        public static IDictionary loadDictionaryFromJsonFile<TKEY, TVALUE>(string fileName)
         {
-            return JsonConvert.DeserializeObject<Dictionary<string, string>>(loadFile(fileName));
+            return JsonConvert.DeserializeObject<Dictionary<TKEY, TVALUE>>(loadFile(fileName));
         }
 
         internal static List<string> loadListFromTextFile(string v)
@@ -42,6 +43,7 @@ namespace SneetoApplication.Utilities
                 {
                     newList.Add(newLine);
                 }
+                sr.Close();
             }
             catch (Exception e)
             {
@@ -58,6 +60,7 @@ namespace SneetoApplication.Utilities
             {
                 StreamReader sr = new StreamReader(Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\" + fileName);
                 data = sr.ReadToEnd();
+                sr.Close();
             }
             catch (Exception e)
             {
@@ -87,6 +90,12 @@ namespace SneetoApplication.Utilities
         internal static int RandomZeroToNumberMinusOne(int number)
         {
             return RandomOneToNumber(number) - 1;
+        }
+
+        internal static void AppendMessageToLog(MessageLog messageLog)
+        {
+            string json = JsonConvert.SerializeObject(messageLog) + ",";
+            WriteLineToFile(json, "chatlog.json");
         }
     }
 }

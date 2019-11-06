@@ -21,12 +21,14 @@ namespace SneetoApplication
         public static readonly string COMMANDCHAR = "commandChar";
         public static Form1 form;
         public ConcurrentQueue<OnMessageReceivedArgs> messagesToProcess;
+        public List<QueuedMessage> queuedMessages;
         private TokenMemoryManager tokenMemoryManager;
         public Brain(Form1 form1)
         {
             form = form1;
             messagesToProcess = new ConcurrentQueue<OnMessageReceivedArgs>();
-            configuration = Utilities.Utilities.loadDictionaryFromJsonFile(config);
+            queuedMessages = new List<QueuedMessage>();
+            configuration = (Dictionary<string, string>)Utilities.Utilities.loadDictionaryFromJsonFile<string, string>(config);
             badWords = Utilities.Utilities.loadListFromTextFile(badWordsFile);
             smallWords = Utilities.Utilities.loadListFromTextFile(smallWordsFile);
             tokenMemoryManager = new TokenMemoryManager();
@@ -47,20 +49,57 @@ namespace SneetoApplication
                     ProcessMessage(value);
                 }
             }
+
+            List<QueuedMessage> messagesToRemove = new List<QueuedMessage>();
+
+            foreach(var message in queuedMessages)
+            {
+                long elapsedTicks = DateTime.Now.Ticks - message.TimeSent;
+                TimeSpan elapsedSpan = new TimeSpan(elapsedTicks);
+                if (elapsedSpan.TotalSeconds > message.Delay)
+                {
+                    messagesToRemove.Add(message);
+                    TwitchChatClient.Instance.sendMessage(message.Event.ChatMessage.Channel, message.Sentence);
+                    UIManager.Instance.SendMessage(message.Event.ChatMessage.Channel, message.Sentence);
+                }
+            }
+
+            foreach(var message in messagesToRemove)
+            {
+                queuedMessages.Remove(message);
+            }
         }
 
         private void ProcessMessage(OnMessageReceivedArgs value)
         {
+            if (!tokenMemoryManager.TrainSingleSentence(new TokenList(value.ChatMessage.Message))) return;
+
+            Utilities.Utilities.AppendMessageToLog(new MessageLog {
+                channel = value.ChatMessage.Channel.ToLower(),
+                time = DateTime.Now.Ticks.ToString(),
+                user = value.ChatMessage.Username.ToLower(),
+                message = value.ChatMessage.Message
+            });
+
+            var channel = ChannelManager.Instance.Channels[value.ChatMessage.Channel.ToLower()];
+            if (!channel.CanSpeak()) return;
+
             var sentence = GenerateRandomSentence(new TokenList(value.ChatMessage.Message));
             if (sentence == null) return;
 
-            TwitchChatClient.Instance.sendMessage(value.ChatMessage.Channel, sentence);
-            UIManager.Instance.SendMessage(value.ChatMessage.Channel, sentence);
+            queuedMessages.Add(new QueuedMessage
+            {
+                Event = value,
+                Sentence = sentence,
+                TimeSent = DateTime.Now.Ticks,
+                Delay = Utilities.Utilities.RandomOneToNumber(3)
+            });
+
+            channel.SetSpeakTime();
         }
 
         private void ProcessCommand(OnMessageReceivedArgs value)
         {
-            
         }
 
         public string TimedGenerateSentence(string sourceSentence, int milisecondsToGenerate)

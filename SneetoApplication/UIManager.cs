@@ -60,6 +60,11 @@ namespace SneetoApplication
             messagesToAppend.Enqueue($"#{e.ChatMessage.Channel} {e.ChatMessage.Username}: {e.ChatMessage.Message}");
         }
 
+        public void printMessage(OnChatCommandReceivedArgs e)
+        {
+            messagesToAppend.Enqueue($"#{e.Command.ChatMessage.Channel} {e.Command.ChatMessage.Username}: {e.Command.ChatMessage.Message}");
+        }
+
         internal void SendMessage(string channel, string sentence)
         {
             messagesToAppend.Enqueue($"#{channel} {TwitchCredentials.Instance.twitchUsername}: {sentence}");
