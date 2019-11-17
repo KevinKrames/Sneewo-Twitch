@@ -214,6 +214,7 @@
     <Compile Include="TwitchChatClient.cs" />
     <Compile Include="UIManager.cs" />
     <Compile Include="Utilities\Utilities.cs" />
+    <Compile Include="SentenceRater.cs" />
     <Compile Include="WordStemmer.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>

@@ -72,7 +72,10 @@ namespace SneetoApplication
 
         private void ProcessMessage(OnMessageReceivedArgs value)
         {
-            if (tokenMemoryManager.IsValidSentence(new TokenList(value.ChatMessage.Message))) ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
+            if (tokenMemoryManager.IsValidSentence(new TokenList(value.ChatMessage.Message)))
+            {
+                ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
+            }
             if (!tokenMemoryManager.TrainSingleSentence(new TokenList(value.ChatMessage.Message))) return;
 
             Utilities.Utilities.AppendMessageToLog(new MessageLog {
@@ -86,8 +89,8 @@ namespace SneetoApplication
             var channel = ChannelManager.Instance.Channels[value.ChatMessage.Channel.ToLower()];
             if (!channel.CanSpeak()) return;
 
-            var sentence = GenerateRandomSentence(new TokenList(value.ChatMessage.Message));
-            if (sentence == null || sentence == value.ChatMessage.Message) return;
+            var sentence = GenerateTimedSentence(value, 250);
+            if (sentence == null || sentence.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()) return;
 
             queuedMessages.Add(new QueuedMessage
             {
@@ -100,26 +103,45 @@ namespace SneetoApplication
             channel.SetSpeakTime();
         }
 
-        private void ProcessCommand(OnMessageReceivedArgs value)
+        private string GenerateTimedSentence(OnMessageReceivedArgs value, int milisecondsToGenerate)
         {
-        }
-
-        public string TimedGenerateSentence(string sourceSentence, int milisecondsToGenerate)
-        {
-            var result = "";
-
-            var wordList = new TokenList(sourceSentence);
-
-            //tokenMemoryManager.UpdateUsedWords(wordList);
+            var wordList = new TokenList(value.ChatMessage.Message);
 
             var timeStarted = GetTimeMilliseconds();
+            long sentencesMade = 0;
 
-            //while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate)
-            //{
-            //    result = GenerateRandomSentence(wordList);
-            //}
+            string result = null;
+            decimal tempValue = 0;
 
-            return result;
+            decimal firstRating = 0;
+            string firstMessage = null;
+            var rater = SentenceRater.Instance;
+
+            while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate)
+            {
+                tempValue = 0;
+
+                result = GenerateRandomSentence(wordList);
+                sentencesMade++;
+
+                if (result.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()) continue;
+
+                tempValue = rater.GetRatingForSentence(value.ChatMessage.Channel, result);
+
+                if (tempValue > firstRating)
+                {
+                    firstMessage = result;
+                    firstRating = tempValue;
+                }
+            }
+
+            UIManager.Instance.printMessage("After " + sentencesMade + " tries, Created sentence: " + firstMessage + " - " + firstRating);
+
+            return firstMessage;
+        }
+
+        private void ProcessCommand(OnMessageReceivedArgs value)
+        {
         }
 
         public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);

@@ -38,10 +38,10 @@ namespace SneetoApplication
             }
             originalValue = WordMemory[stem];
             var invertedValue = (1m - originalValue) < 0 ? 0 : (1m - originalValue);
-            var bonusValue = 0.25m * invertedValue;
+            var bonusValue = 0.5m * invertedValue;
             if (invertedValue == 0)
             {
-                WordMemory[stem] += 0.25m;
+                WordMemory[stem] += 0.5m;
             } else
             {
                 WordMemory[stem] = 1m + bonusValue;

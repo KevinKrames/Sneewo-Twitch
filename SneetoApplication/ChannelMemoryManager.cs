@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SneetoApplication.Data_Structures;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -45,6 +46,15 @@ namespace SneetoApplication
                 updateTime = 0;
                 UIManager.Instance.PrintMemory();
             }
+        }
+
+        public bool HasStemInChannel(string channel, Stem stem) {
+            return Channels.ContainsKey(channel) && Channels[channel].WordMemory.ContainsKey(stem);
+        }
+
+        public decimal GetValueForStem(string channel, Stem stem)
+        {
+            return Channels[channel].WordMemory[stem];
         }
 
         public void UpdateMemoryWithMessage(string channel, string message)
