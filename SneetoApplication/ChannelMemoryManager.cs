@@ -43,6 +43,7 @@ namespace SneetoApplication
                     memory.Update();
                 }
                 updateTime = 0;
+                UIManager.Instance.PrintMemory();
             }
         }
 
@@ -50,6 +51,7 @@ namespace SneetoApplication
         {
             if (!Channels.ContainsKey(channel)) AddChannel(channel);
             Channels[channel].UpdateMessage(message);
+            UIManager.Instance.PrintMemory();
         }
 
         private void AddChannel(string channel)

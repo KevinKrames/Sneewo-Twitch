@@ -37,6 +37,7 @@
             this.stemBox = new System.Windows.Forms.TextBox();
             this.stemButton = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.richTextMemory = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // button1
@@ -111,11 +112,21 @@
             this.timer1.Interval = 1000;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // richTextMemory
+            // 
+            this.richTextMemory.Location = new System.Drawing.Point(509, 13);
+            this.richTextMemory.Name = "richTextMemory";
+            this.richTextMemory.Size = new System.Drawing.Size(411, 299);
+            this.richTextMemory.TabIndex = 7;
+            this.richTextMemory.Text = "";
+            this.richTextMemory.TextChanged += new System.EventHandler(this.richTextMemory_TextChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(514, 372);
+            this.ClientSize = new System.Drawing.Size(932, 372);
+            this.Controls.Add(this.richTextMemory);
             this.Controls.Add(this.stemButton);
             this.Controls.Add(this.stemBox);
             this.Controls.Add(this.button4);
@@ -141,6 +152,7 @@
         private System.Windows.Forms.TextBox stemBox;
         private System.Windows.Forms.Button stemButton;
         private System.Windows.Forms.Timer timer1;
+        public System.Windows.Forms.RichTextBox richTextMemory;
     }
 }
 

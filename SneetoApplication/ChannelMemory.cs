@@ -9,10 +9,10 @@ namespace SneetoApplication
 {
     public class ChannelMemory
     {
-        private Dictionary<Stem, decimal> wordMemory;
+        public Dictionary<Stem, decimal> WordMemory;
         public ChannelMemory()
         {
-            wordMemory = new Dictionary<Stem, decimal>();
+            WordMemory = new Dictionary<Stem, decimal>();
         }
 
         internal void UpdateMessage(string message)
@@ -25,25 +25,26 @@ namespace SneetoApplication
                 if (stem == null) continue;
                 UpdateMemoryForStem(stem);
             }
+
+            DecayMemory(0.025m);
         }
 
         private void UpdateMemoryForStem(Stem stem)
         {
-            DecayMemory(0.05m);
             var originalValue = 0m;
-            if (!wordMemory.ContainsKey(stem)) {
-                wordMemory[stem] = 1m;
+            if (!WordMemory.ContainsKey(stem)) {
+                WordMemory[stem] = 1m;
                 return;
             }
-            originalValue = wordMemory[stem];
+            originalValue = WordMemory[stem];
             var invertedValue = (1m - originalValue) < 0 ? 0 : (1m - originalValue);
             var bonusValue = 0.25m * invertedValue;
             if (invertedValue == 0)
             {
-                wordMemory[stem] += 0.25m;
+                WordMemory[stem] += 0.25m;
             } else
             {
-                wordMemory[stem] = 1m + bonusValue;
+                WordMemory[stem] = 1m + bonusValue;
             }
         }
 
@@ -54,15 +55,16 @@ namespace SneetoApplication
 
         private void DecayMemory(decimal value)
         {
-            foreach (var stem in wordMemory.Keys)
+            foreach (var stem in WordMemory.Keys.ToArray())
             {
-                if (wordMemory[stem] >= 1m)
+                if (WordMemory[stem] >= 1m)
                 {
-                    wordMemory[stem] -= value + wordMemory[stem] * value;
+                    WordMemory[stem] -= value + WordMemory[stem] * value;
                 } else
                 {
-                    wordMemory[stem] -= value;
+                    WordMemory[stem] -= value;
                 }
+                if (WordMemory[stem] <= 0.05m) WordMemory.Remove(stem);
             }
         }
     }

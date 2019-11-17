@@ -72,6 +72,7 @@ namespace SneetoApplication
 
         private void ProcessMessage(OnMessageReceivedArgs value)
         {
+            if (tokenMemoryManager.IsValidSentence(new TokenList(value.ChatMessage.Message))) ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
             if (!tokenMemoryManager.TrainSingleSentence(new TokenList(value.ChatMessage.Message))) return;
 
             Utilities.Utilities.AppendMessageToLog(new MessageLog {
@@ -81,13 +82,12 @@ namespace SneetoApplication
                 message = value.ChatMessage.Message
             });
 
-            ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
 
             var channel = ChannelManager.Instance.Channels[value.ChatMessage.Channel.ToLower()];
             if (!channel.CanSpeak()) return;
 
             var sentence = GenerateRandomSentence(new TokenList(value.ChatMessage.Message));
-            if (sentence == null) return;
+            if (sentence == null || sentence == value.ChatMessage.Message) return;
 
             queuedMessages.Add(new QueuedMessage
             {

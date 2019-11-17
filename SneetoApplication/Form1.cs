@@ -118,5 +118,10 @@ namespace SneetoApplication
             CommandManager.Instance.Update();
             Brain.Instance.Update();
         }
+
+        private void richTextMemory_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
