@@ -85,12 +85,15 @@ namespace SneetoApplication
                 message = value.ChatMessage.Message
             });
 
+            ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), value.ChatMessage.Message);
 
             var channel = ChannelManager.Instance.Channels[value.ChatMessage.Channel.ToLower()];
             if (!channel.CanSpeak()) return;
 
             var sentence = GenerateTimedSentence(value, 250);
             if (sentence == null || sentence.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()) return;
+
+            ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), sentence);
 
             queuedMessages.Add(new QueuedMessage
             {
@@ -113,18 +116,22 @@ namespace SneetoApplication
             string result = null;
             decimal tempValue = 0;
 
-            decimal firstRating = 0;
+            decimal firstRating = -1;
             string firstMessage = null;
+            decimal secondRating = -1;
+            string secondMessage = null;
             var rater = SentenceRater.Instance;
 
-            while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate)
+            while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate / 2)
             {
                 tempValue = 0;
-
                 result = GenerateRandomSentence(wordList);
                 sentencesMade++;
 
-                if (result.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()) continue;
+                if (result == null 
+                    || result.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()
+                    || ChannelMemoryManager.Instance.HasSentence(value.ChatMessage.Channel.ToLower(), result))
+                        continue;
 
                 tempValue = rater.GetRatingForSentence(value.ChatMessage.Channel, result);
 
@@ -135,7 +142,36 @@ namespace SneetoApplication
                 }
             }
 
+            timeStarted = GetTimeMilliseconds();
+
+            while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate / 2)
+            {
+                tempValue = 0;
+                result = GenerateRandomSentence(StemManager.GetRandomStemWord());
+                sentencesMade++;
+
+                if (result == null
+                    || result.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()
+                    || ChannelMemoryManager.Instance.HasSentence(value.ChatMessage.Channel.ToLower(), result))
+                    continue;
+
+                tempValue = rater.GetRatingForSentence(value.ChatMessage.Channel, result);
+
+                if (tempValue > secondRating)
+                {
+                    secondMessage = result;
+                    secondRating = tempValue;
+                }
+            }
+
             UIManager.Instance.printMessage("After " + sentencesMade + " tries, Created sentence: " + firstMessage + " - " + firstRating);
+            UIManager.Instance.printMessage("After " + sentencesMade + " tries, Created second sentence: " + secondMessage + " - " + secondRating);
+
+            if (secondMessage != null && (firstMessage == null || secondRating > firstRating))
+            {
+                firstMessage = secondMessage;
+                firstRating = secondRating;
+            }
 
             return firstMessage;
         }
@@ -156,9 +192,8 @@ namespace SneetoApplication
             return majorWords[Utilities.Utilities.RandomZeroToNumberMinusOne(majorWords.Count)];
         }
 
-        public string GenerateRandomSentence(TokenList tokenList)
+        public string GenerateRandomSentence(string word)
         {
-            var word = GetRandomWord(tokenList);
             if (word == null) { return null; }
             var tokens = StemManager.GetTokensForUnstemmedWord(word);
             if (tokens == null || tokens.Count == 0) { return null; }
@@ -168,6 +203,11 @@ namespace SneetoApplication
             var reverseToken = TokenManager.GetTokenForID(token.PartnerID);
 
             return $"{GetNextRandomTokenString(reverseToken, true)} {token.WordText} {GetNextRandomTokenString(token, false)}";
+        }
+
+        public string GenerateRandomSentence(TokenList tokenList)
+        {
+            return GenerateRandomSentence(GetRandomWord(tokenList));
         }
 
         private string GetNextRandomTokenString(Token token, bool reverse)

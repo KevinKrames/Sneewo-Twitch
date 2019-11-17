@@ -51,7 +51,7 @@ namespace SneetoApplication
 
             if (tokenSentence.Get().Count == 0) return rating;
 
-            var power = Math.Pow(tokenSentence.Get().Count, 0.2);
+            var power = Math.Pow(tokenSentence.Get().Count, 0.5);
             var multiplier = (decimal)(1 / power);
             rating = rating * multiplier;
             return rating;

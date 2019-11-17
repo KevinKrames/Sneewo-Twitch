@@ -10,9 +10,13 @@ namespace SneetoApplication
     public class ChannelMemory
     {
         public Dictionary<Stem, decimal> WordMemory;
+        private List<ChannelMemorySentence> memorySentences;
+        private static int MaxSentenceDuration = 600000;
+        
         public ChannelMemory()
         {
             WordMemory = new Dictionary<Stem, decimal>();
+            memorySentences = new List<ChannelMemorySentence>();
         }
 
         internal void UpdateMessage(string message)
@@ -38,7 +42,7 @@ namespace SneetoApplication
             }
             originalValue = WordMemory[stem];
             var invertedValue = (1m - originalValue) < 0 ? 0 : (1m - originalValue);
-            var bonusValue = 0.5m * invertedValue;
+            var bonusValue = 2m * (invertedValue * 0.5m);
             if (invertedValue == 0)
             {
                 WordMemory[stem] += 0.5m;
@@ -50,7 +54,22 @@ namespace SneetoApplication
 
         public void Update()
         {
+            UpdateMemorySentences();
             DecayMemory(0.025m);
+        }
+
+        private void UpdateMemorySentences()
+        {
+            var deleteSentences = new List<ChannelMemorySentence>();
+            foreach (var sentence in memorySentences)
+            {
+                if (GetTimeMilliseconds() - sentence.TimeSent > MaxSentenceDuration)
+                {
+                    deleteSentences.Add(sentence);
+                }
+            }
+            
+            foreach (var sentence in deleteSentences) { memorySentences.Remove(sentence); }
         }
 
         private void DecayMemory(decimal value)
@@ -67,5 +86,31 @@ namespace SneetoApplication
                 if (WordMemory[stem] <= 0.05m) WordMemory.Remove(stem);
             }
         }
+
+        internal bool HasMessageSent(string message)
+        {
+            bool result = false;
+            foreach (var sentence in memorySentences)
+            {
+                if (sentence.Text == message)
+                {
+                    result = true;
+                    break;
+                }
+            }
+
+            return result;
+        }
+
+        internal void MessageSent(string message)
+        {
+            memorySentences.Add(new ChannelMemorySentence
+            {
+                Text = message,
+                TimeSent = GetTimeMilliseconds()
+            });
+        }
+
+        public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
     }
 }

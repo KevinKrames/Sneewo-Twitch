@@ -112,11 +112,17 @@ namespace SneetoApplication
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            UIManager.Instance.Update();
-            ChannelManager.Instance.Update();
-            ChannelMemoryManager.Instance.Update();
-            CommandManager.Instance.Update();
-            Brain.Instance.Update();
+            try
+            {
+                UIManager.Instance.Update();
+                ChannelManager.Instance.Update();
+                ChannelMemoryManager.Instance.Update();
+                CommandManager.Instance.Update();
+                Brain.Instance.Update();
+            } catch (Exception exc)
+            {
+                Utilities.Utilities.WriteLineToFile(exc.StackTrace, "log.txt");
+            }
         }
 
         private void richTextMemory_TextChanged(object sender, EventArgs e)

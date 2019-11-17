@@ -68,5 +68,17 @@ namespace SneetoApplication
         {
             Channels[channel] = new ChannelMemory();
         }
+
+        internal void AddSentence(string channel, string message)
+        {
+            if (!Channels.ContainsKey(channel)) AddChannel(channel);
+            Channels[channel].MessageSent(message);
+        }
+
+        internal bool HasSentence(string channel, string message)
+        {
+            if (!Channels.ContainsKey(channel)) AddChannel(channel);
+            return Channels[channel].HasMessageSent(message);
+        }
     }
 }

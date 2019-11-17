@@ -188,6 +188,7 @@
     <Compile Include="ChannelManager.cs" />
     <Compile Include="ChannelMemory.cs" />
     <Compile Include="ChannelMemoryManager.cs" />
+    <Compile Include="ChannelMemorySentence.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\LeaveCommand .cs" />

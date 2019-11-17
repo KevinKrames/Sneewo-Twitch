@@ -67,5 +67,14 @@ namespace SneetoApplication.Data_Structures
 
             return guids.Select(g => TokenManager.GetTokenForID(g)).ToList();
         }
+
+        internal static string GetRandomStemWord()
+        {
+            var maxCount = StemDictionary.Keys.Count;
+            var randomText = StemDictionary.Keys.ElementAt(Utilities.Utilities.RandomOneToNumber(maxCount) - 1);
+            var tokens = GetTokensForUnstemmedWord(randomText);
+            if (tokens == null || tokens.Count == 0) return null;
+            return tokens[Utilities.Utilities.RandomOneToNumber(tokens.Count) - 1].WordText;
+        }
     }
 }
