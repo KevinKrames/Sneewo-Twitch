@@ -81,6 +81,8 @@ namespace SneetoApplication
                 message = value.ChatMessage.Message
             });
 
+            ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
+
             var channel = ChannelManager.Instance.Channels[value.ChatMessage.Channel.ToLower()];
             if (!channel.CanSpeak()) return;
 

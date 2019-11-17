@@ -114,6 +114,7 @@ namespace SneetoApplication
         {
             UIManager.Instance.Update();
             ChannelManager.Instance.Update();
+            ChannelMemoryManager.Instance.Update();
             CommandManager.Instance.Update();
             Brain.Instance.Update();
         }

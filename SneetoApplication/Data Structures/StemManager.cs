@@ -19,15 +19,21 @@ namespace SneetoApplication.Data_Structures
             StemDictionary = new Dictionary<string, Stem>();
         }
 
-        public static string GetStemForToken(string text)
+        public static string GetStemTextForToken(string text)
         {
             var filteredText = specialCharactersRegex.Replace(text, "").ToLower();
             return Stemmer.GetSteamWord(filteredText);
         }
 
+        public static Stem GetStemForToken(string text)
+        {
+            var filteredText = specialCharactersRegex.Replace(text, "").ToLower();
+            return StemDictionary[Stemmer.GetSteamWord(filteredText)];
+        }
+
         public static void AddToken(Token token)
         {
-            var stemText = GetStemForToken(token.WordText);
+            var stemText = GetStemTextForToken(token.WordText);
             if (StemDictionary.TryGetValue(stemText, out Stem stem))
             {
                 if (!stem.stemTokens.Contains(token.ID))
@@ -44,7 +50,7 @@ namespace SneetoApplication.Data_Structures
 
         public static List<Guid> GetGuidsForUnstemmedWord(string word)
         {
-            var stemText = GetStemForToken(word);
+            var stemText = GetStemTextForToken(word);
             if (StemDictionary.TryGetValue(stemText, out Stem stem))
             {
                 if (stem.stemTokens != null && stem.stemTokens.Count > 0)
