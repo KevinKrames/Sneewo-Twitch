@@ -42,7 +42,10 @@ namespace SneetoApplication
                 if (stem != null
                     && ChannelMemoryManager.Instance.HasStemInChannel(channel, stem)
                     && !usedStems.Contains(stem))
-                        rating += ChannelMemoryManager.Instance.GetValueForStem(channel, stem);
+                {
+                    rating += ChannelMemoryManager.Instance.GetValueForStem(channel, stem);
+                    usedStems.Add(stem);
+                }
                 hasNextToken = nextToken.MoveNext();
             }
 

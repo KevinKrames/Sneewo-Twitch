@@ -26,7 +26,7 @@ namespace SneetoApplication
                 UpdateMemoryForStem(stem);
             }
 
-            DecayMemory(0.025m);
+            DecayMemory(0.0125m);
         }
 
         private void UpdateMemoryForStem(Stem stem)
@@ -50,7 +50,7 @@ namespace SneetoApplication
 
         public void Update()
         {
-            DecayMemory(0.1m);
+            DecayMemory(0.025m);
         }
 
         private void DecayMemory(decimal value)

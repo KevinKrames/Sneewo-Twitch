@@ -28,7 +28,7 @@ namespace SneetoApplication.Data_Structures
         public static Stem GetStemForToken(string text)
         {
             var filteredText = specialCharactersRegex.Replace(text, "").ToLower();
-            if (!StemDictionary.ContainsKey(filteredText)) return null;
+            if (filteredText != null && !StemDictionary.ContainsKey(Stemmer.GetSteamWord(filteredText))) return null;
             return StemDictionary[Stemmer.GetSteamWord(filteredText)];
         }
 
