@@ -179,6 +179,7 @@
   <ItemGroup>
     <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tests\TestChannelMemory.cs" />
     <Compile Include="Tests\TestDatabaseManager.cs" />
     <Compile Include="Tests\TestStemManager.cs" />
     <Compile Include="Tests\TestTokenMemoryManager.cs" />

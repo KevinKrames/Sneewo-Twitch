@@ -1,4 +1,5 @@
-﻿using SneetoApplication.Data_Structures;
+﻿using Newtonsoft.Json;
+using SneetoApplication.Data_Structures;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace SneetoApplication
         public static Dictionary<string, string> configuration;
         public static List<string> badWords;
         public static List<string> smallWords;
+        public static List<string> ignores;
         public static readonly string USE_DATABASE = "useDatabase";
         public static readonly string config = "configuration.json";
         public static readonly string badWordsFile = "badWords.txt";
@@ -31,8 +33,31 @@ namespace SneetoApplication
             configuration = (Dictionary<string, string>)Utilities.Utilities.loadDictionaryFromJsonFile<string, string>(config);
             badWords = Utilities.Utilities.loadListFromTextFile(badWordsFile);
             smallWords = Utilities.Utilities.loadListFromTextFile(smallWordsFile);
+
+            LoadIgnores();
             tokenMemoryManager = new TokenMemoryManager();
+
             Instance = this;
+        }
+
+        private void LoadIgnores()
+        {
+            ignores = new List<string>();
+            var localChannels = (Dictionary<string, object>)Utilities.Utilities.loadDictionaryFromJsonFile<string, object>("ignores.json");
+
+            try
+            {
+                var names = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(localChannels["channelsList"].ToString());
+
+                foreach (var name in names)
+                {
+                    ignores.Add(name["name"].Trim().ToLower());
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+            }
         }
 
         public static Brain Instance { get; set; }
@@ -72,6 +97,8 @@ namespace SneetoApplication
 
         private void ProcessMessage(OnMessageReceivedArgs value)
         {
+            if (ignores.Contains(value.ChatMessage.Username.Trim().ToLower())) return;
+
             if (tokenMemoryManager.IsValidSentence(new TokenList(value.ChatMessage.Message)))
             {
                 ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);

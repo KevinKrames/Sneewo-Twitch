@@ -21,7 +21,7 @@ namespace SneetoApplication
 
         internal void UpdateMessage(string message)
         {
-            var majorWords = new TokenList(message).GetMajorWords();
+            var majorWords = new TokenList(message).GetMajorWords().Distinct();
 
             foreach(var word in majorWords)
             {
@@ -72,7 +72,7 @@ namespace SneetoApplication
             foreach (var sentence in deleteSentences) { memorySentences.Remove(sentence); }
         }
 
-        private void DecayMemory(decimal value)
+        public virtual void DecayMemory(decimal value)
         {
             foreach (var stem in WordMemory.Keys.ToArray())
             {
@@ -87,14 +87,14 @@ namespace SneetoApplication
             }
         }
 
-        internal bool HasMessageSent(string message)
+        public bool HasMessageSent(string message)
         {
-            bool result = false;
+            bool result = true;
             foreach (var sentence in memorySentences)
             {
                 if (sentence.Text == message)
                 {
-                    result = true;
+                    result = false;
                     break;
                 }
             }
@@ -102,7 +102,7 @@ namespace SneetoApplication
             return result;
         }
 
-        internal void MessageSent(string message)
+        public void MessageSent(string message)
         {
             memorySentences.Add(new ChannelMemorySentence
             {
@@ -111,6 +111,6 @@ namespace SneetoApplication
             });
         }
 
-        public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
+        public virtual int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
     }
 }

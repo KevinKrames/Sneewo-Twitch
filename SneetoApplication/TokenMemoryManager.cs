@@ -66,6 +66,7 @@ namespace SneetoApplication
                         data = data.Substring(0, data.Length - 1);
                     }
 
+                    if (Brain.ignores.Contains(Utilities.Utilities.jsonUnserialize(data)["user"].Trim().ToLower())) continue;
                     var message = new TokenList(Utilities.Utilities.jsonUnserialize(data)["message"]);
                     if (TrainSingleSentence(message)) linesTrained++;
 
