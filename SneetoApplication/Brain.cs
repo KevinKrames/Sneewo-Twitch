@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TwitchLib.Client.Events;
 
@@ -24,7 +25,6 @@ namespace SneetoApplication
         public static Form1 form;
         public ConcurrentQueue<OnMessageReceivedArgs> messagesToProcess;
         public List<QueuedMessage> queuedMessages;
-        private TokenMemoryManager tokenMemoryManager;
         public Brain(Form1 form1)
         {
             form = form1;
@@ -33,9 +33,7 @@ namespace SneetoApplication
             configuration = (Dictionary<string, string>)Utilities.Utilities.loadDictionaryFromJsonFile<string, string>(config);
             badWords = Utilities.Utilities.loadListFromTextFile(badWordsFile);
             smallWords = Utilities.Utilities.loadListFromTextFile(smallWordsFile);
-
             LoadIgnores();
-            tokenMemoryManager = new TokenMemoryManager();
 
             Instance = this;
         }
@@ -43,11 +41,11 @@ namespace SneetoApplication
         private void LoadIgnores()
         {
             ignores = new List<string>();
-            var localChannels = (Dictionary<string, object>)Utilities.Utilities.loadDictionaryFromJsonFile<string, object>("ignores.json");
+            var ignoreJson = (Dictionary<string, object>)Utilities.Utilities.loadDictionaryFromJsonFile<string, object>("ignores.json");
 
             try
             {
-                var names = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(localChannels["channelsList"].ToString());
+                var names = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(ignoreJson["usersList"].ToString());
 
                 foreach (var name in names)
                 {
@@ -99,11 +97,10 @@ namespace SneetoApplication
         {
             if (ignores.Contains(value.ChatMessage.Username.Trim().ToLower())) return;
 
-            if (tokenMemoryManager.IsValidSentence(new TokenList(value.ChatMessage.Message)))
+            if (IsValidSentence(new TokenList(value.ChatMessage.Message)))
             {
                 ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
             }
-            if (!tokenMemoryManager.TrainSingleSentence(new TokenList(value.ChatMessage.Message))) return;
 
             Utilities.Utilities.AppendMessageToLog(new MessageLog {
                 channel = value.ChatMessage.Channel.ToLower(),
@@ -115,10 +112,10 @@ namespace SneetoApplication
             ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), value.ChatMessage.Message);
 
             var channel = ChannelManager.Instance.Channels[value.ChatMessage.Channel.ToLower()];
-            if (!channel.CanSpeak()) return;
+            if (!channel.CanSpeak() || Utilities.Utilities.RandomOneToNumber(4) > 1) return;
 
-            var sentence = GenerateTimedSentence(value, 250);
-            if (sentence == null || sentence.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()) return;
+            var sentence = GenerateSentence(value);
+            if (sentence == null || sentence.Trim().ToLower() == "") return;
 
             ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), sentence);
 
@@ -127,80 +124,53 @@ namespace SneetoApplication
                 Event = value,
                 Sentence = sentence,
                 TimeSent = DateTime.Now.Ticks,
-                Delay = Utilities.Utilities.RandomOneToNumber(3)
+                Delay = 0
             });
 
             channel.SetSpeakTime();
         }
 
-        private string GenerateTimedSentence(OnMessageReceivedArgs value, int milisecondsToGenerate)
+        private string GenerateSentence(OnMessageReceivedArgs value)
         {
-            var wordList = new TokenList(value.ChatMessage.Message);
+            var wordList = value.ChatMessage.Message;
 
-            var timeStarted = GetTimeMilliseconds();
-            long sentencesMade = 0;
+            var startTime = GetTimeMilliseconds();
 
-            string result = null;
-            decimal tempValue = 0;
+            var runner = GPT2Runner.Instance;
+            var inputSentences = String.Join("\n", ChannelMemoryManager.Instance.Channels[value.ChatMessage.Channel.ToLower()].GetMemorySentences().Select(it => it.Text));
+            var messages = runner.Generate_Sentence(inputSentences);
 
-            decimal firstRating = -1;
-            string firstMessage = null;
-            decimal secondRating = -1;
-            string secondMessage = null;
-            var rater = SentenceRater.Instance;
+            var message = getRandomSentence(messages);
 
-            while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate / 2)
-            {
-                tempValue = 0;
-                result = GenerateRandomSentence(wordList);
-                sentencesMade++;
+            UIManager.Instance.printMessage("Created message in " + (GetTimeMilliseconds() - startTime)  + "ms.");
 
-                if (result == null 
-                    || result.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()
-                    || ChannelMemoryManager.Instance.HasSentence(value.ChatMessage.Channel.ToLower(), result))
-                        continue;
+            return message;
+        }
 
-                tempValue = rater.GetRatingForSentence(value.ChatMessage.Channel, result);
+        private string getRandomSentence(string messages)
+        {
+            if (messages == null) return null;
+            var listMessages = messages.Split('\r', '\n').ToList();
+            listMessages = listMessages
+                .Where(x => !String.IsNullOrWhiteSpace(x))
+                .ToList();
+            var messagesToRemove = new List<string>();
+            var regex = "(={40}.SAMPLE.\\d.={40}|={80})";
 
-                if (tempValue > firstRating)
-                {
-                    firstMessage = result;
-                    firstRating = tempValue;
+            listMessages.ForEach(it => {
+                if (Regex.Match(it, regex).Success) {
+                    messagesToRemove.Add(it);
+                    if (listMessages.IndexOf(it) != 0) messagesToRemove.Add(listMessages[listMessages.IndexOf(it) - 1]);
                 }
-            }
+                if (it.Length <= 2) messagesToRemove.Add(it);
+            });
 
-            timeStarted = GetTimeMilliseconds();
-
-            while (GetTimeMilliseconds() - timeStarted < milisecondsToGenerate / 2)
+            messagesToRemove.ForEach(it =>
             {
-                tempValue = 0;
-                result = GenerateRandomSentence(StemManager.GetRandomStemWord());
-                sentencesMade++;
+                listMessages.Remove(it);
+            });
 
-                if (result == null
-                    || result.Trim().ToLower() == value.ChatMessage.Message.Trim().ToLower()
-                    || ChannelMemoryManager.Instance.HasSentence(value.ChatMessage.Channel.ToLower(), result))
-                    continue;
-
-                tempValue = rater.GetRatingForSentence(value.ChatMessage.Channel, result);
-
-                if (tempValue > secondRating)
-                {
-                    secondMessage = result;
-                    secondRating = tempValue;
-                }
-            }
-
-            UIManager.Instance.printMessage("After " + sentencesMade + " tries, Created sentence: " + firstMessage + " - " + firstRating);
-            UIManager.Instance.printMessage("After " + sentencesMade + " tries, Created second sentence: " + secondMessage + " - " + secondRating);
-
-            if (secondMessage != null && (firstMessage == null || secondRating > firstRating))
-            {
-                firstMessage = secondMessage;
-                firstRating = secondRating;
-            }
-
-            return firstMessage;
+            return listMessages.Count <= 0 ? null : listMessages[Utilities.Utilities.RandomZeroToNumberMinusOne(listMessages.Count)];
         }
 
         private void ProcessCommand(OnMessageReceivedArgs value)
@@ -209,48 +179,24 @@ namespace SneetoApplication
 
         public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
 
-        public string GetRandomWord(TokenList tokenList)
+        public bool IsValidSentence(TokenList tokenList)
         {
-            if (!tokenList.Any()) return null;
-
-            var majorWords = tokenList.GetMajorWords();
-            if (!majorWords.Any()) return null;
-
-            return majorWords[Utilities.Utilities.RandomZeroToNumberMinusOne(majorWords.Count)];
-        }
-
-        public string GenerateRandomSentence(string word)
-        {
-            if (word == null) { return null; }
-            var tokens = StemManager.GetTokensForUnstemmedWord(word);
-            if (tokens == null || tokens.Count == 0) { return null; }
-            var token = tokens[Utilities.Utilities.RandomZeroToNumberMinusOne(tokens.Count)];
-
-            if (token.reverse) token = TokenManager.GetTokenForID(token.PartnerID);
-            var reverseToken = TokenManager.GetTokenForID(token.PartnerID);
-
-            return $"{GetNextRandomTokenString(reverseToken, true)} {token.WordText} {GetNextRandomTokenString(token, false)}";
-        }
-
-        public string GenerateRandomSentence(TokenList tokenList)
-        {
-            return GenerateRandomSentence(GetRandomWord(tokenList));
-        }
-
-        private string GetNextRandomTokenString(Token token, bool reverse)
-        {
-            if (token.ChildrenTokens == null) return "";
-
-            var number = Utilities.Utilities.RandomZeroToNumberMinusOne(token.ChildrenTokens.Count);
-            Token tempToken = TokenManager.GetTokenForID(token.ChildrenTokens[number]);
-            
-            if (reverse)
+            foreach (var badWord in Brain.badWords)
             {
-                return GetNextRandomTokenString(tempToken, reverse) + " " + tempToken.WordText;
-            } else
-            {
-                return tempToken.WordText + " " + GetNextRandomTokenString(tempToken, reverse);
+                if (badWord.Length == 0 || badWord[0] == '#') continue;
+
+                if (badWord[0] == '*')
+                {
+                    var temp = tokenList.DoesContainAnyFormOfString(badWord.Substring(1));
+                    if (temp) return false;
+                }
+                else if (tokenList.DoesContainWord(badWord))
+                {
+                    return false;
+                }
             }
+
+            return true;
         }
     }
 }

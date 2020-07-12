@@ -86,28 +86,7 @@ namespace SneetoApplication
 
         public bool TrainSingleSentence(TokenList tokenList)
         {
-            if (!IsValidSentence(tokenList)) return false;
             TrainTokenList(tokenList);
-            return true;
-        }
-
-        public bool IsValidSentence(TokenList tokenList)
-        {
-            foreach (var badWord in Brain.badWords)
-            {
-                if (badWord.Length == 0 || badWord[0] == '#') continue;
-
-                if (badWord[0] == '*')
-                {
-                    var temp = tokenList.DoesContainAnyFormOfString(badWord.Substring(1));
-                    if (temp) return false;
-                }
-                else if (tokenList.DoesContainWord(badWord))
-                {
-                    return false;
-                }
-            }
-
             return true;
         }
 
