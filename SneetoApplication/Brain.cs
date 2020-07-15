@@ -97,7 +97,7 @@ namespace SneetoApplication
         {
             if (ignores.Contains(value.ChatMessage.Username.Trim().ToLower())) return;
 
-            if (IsValidSentence(new TokenList(value.ChatMessage.Message)))
+            if (IsValidSentence(value.ChatMessage.Message))
             {
                 ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
             }
@@ -138,6 +138,12 @@ namespace SneetoApplication
 
             var runner = GPT2Runner.Instance;
             var inputSentences = String.Join("\n", ChannelMemoryManager.Instance.Channels[value.ChatMessage.Channel.ToLower()].GetMemorySentences().Select(it => it.Text));
+            while (inputSentences.Length > 2000)
+            {
+                var inputList = inputSentences.Split('\n').ToList();
+                inputList.RemoveAt(inputList.Count - 1);
+                inputSentences = String.Join("\n", inputList);
+            }
             var messages = runner.Generate_Sentence(inputSentences);
 
             var message = getRandomSentence(messages);
@@ -161,8 +167,18 @@ namespace SneetoApplication
                 if (Regex.Match(it, regex).Success) {
                     messagesToRemove.Add(it);
                     if (listMessages.IndexOf(it) != 0) messagesToRemove.Add(listMessages[listMessages.IndexOf(it) - 1]);
+                    return;
                 }
-                if (it.Length <= 2) messagesToRemove.Add(it);
+                if (it.Length <= 2)
+                {
+                    messagesToRemove.Add(it);
+                    return;
+                }
+                if (!IsValidSentence(it))
+                {
+                    messagesToRemove.Add(it);
+                    return;
+                }
             });
 
             messagesToRemove.ForEach(it =>
@@ -179,7 +195,7 @@ namespace SneetoApplication
 
         public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
 
-        public bool IsValidSentence(TokenList tokenList)
+        public bool IsValidSentence(string sentence)
         {
             foreach (var badWord in Brain.badWords)
             {
@@ -187,16 +203,30 @@ namespace SneetoApplication
 
                 if (badWord[0] == '*')
                 {
-                    var temp = tokenList.DoesContainAnyFormOfString(badWord.Substring(1));
+                    var temp = DoesContainAnyFormOfString(sentence, badWord.Substring(1));
                     if (temp) return false;
                 }
-                else if (tokenList.DoesContainWord(badWord))
+                else if (DoesContainWord(sentence, badWord))
                 {
                     return false;
                 }
             }
 
             return true;
+        }
+
+        public bool DoesContainWord(string sentence, string word)
+        {
+            var wordLower = word.ToLower().Trim();
+            var match = sentence.Split(' ').Where(w => w.ToLower().Trim().Equals(wordLower)).ToList();
+            return match.Count > 0;
+        }
+
+        public bool DoesContainAnyFormOfString(string sentence, string word)
+        {
+            var wordLower = word.ToLower().Trim();
+            var match = sentence.Split(' ').Where(w => w.ToLower().Trim().Contains(wordLower)).ToList();
+            return match.Count > 0;
         }
     }
 }
