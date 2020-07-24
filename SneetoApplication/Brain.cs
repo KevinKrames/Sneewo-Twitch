@@ -22,6 +22,8 @@ namespace SneetoApplication
         public static readonly string badWordsFile = "badWords.txt";
         public static readonly string smallWordsFile = "smallWords.txt";
         public static readonly string COMMANDCHAR = "commandChar";
+        public static readonly string GPT2ENDTOKEN = "<|endoftext|>";
+
         public static Form1 form;
         public ConcurrentQueue<OnMessageReceivedArgs> messagesToProcess;
         public List<QueuedMessage> queuedMessages;
@@ -64,13 +66,7 @@ namespace SneetoApplication
         {
             while (messagesToProcess.TryDequeue(out OnMessageReceivedArgs value))
             {
-                if (value.ChatMessage.Message.Length > 0 && value.ChatMessage.Message.Substring(0, 1) == configuration[COMMANDCHAR])
-                {
-                    ProcessCommand(value);
-                } else
-                {
-                    ProcessMessage(value);
-                }
+                ProcessMessage(value);
             }
 
             List<QueuedMessage> messagesToRemove = new List<QueuedMessage>();
@@ -82,8 +78,9 @@ namespace SneetoApplication
                 if (elapsedSpan.TotalSeconds > message.Delay)
                 {
                     messagesToRemove.Add(message);
-                    TwitchChatClient.Instance.sendMessage(message.Event.ChatMessage.Channel, message.Sentence);
-                    UIManager.Instance.SendMessage(message.Event.ChatMessage.Channel, message.Sentence);
+                    var channel = message.Event != null ? message.Event.ChatMessage.Channel : message.CommandEvent.Command.ChatMessage.Channel;
+                    TwitchChatClient.Instance.sendMessage(channel, message.Sentence);
+                    UIManager.Instance.SendMessage(channel, message.Sentence);
                 }
             }
 
@@ -95,39 +92,47 @@ namespace SneetoApplication
 
         private void ProcessMessage(OnMessageReceivedArgs value)
         {
-            if (ignores.Contains(value.ChatMessage.Username.Trim().ToLower())) return;
-
-            if (IsValidSentence(value.ChatMessage.Message))
+            try
             {
-                ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
+                if (ignores.Contains(value.ChatMessage.Username.Trim().ToLower())) return;
+
+                if (IsValidSentence(value.ChatMessage.Message))
+                {
+                    ChannelMemoryManager.Instance.UpdateMemoryWithMessage(value.ChatMessage.Channel, value.ChatMessage.Message);
+                }
+
+                Utilities.Utilities.AppendMessageToLog(new MessageLog
+                {
+                    channel = value.ChatMessage.Channel.ToLower(),
+                    time = DateTime.Now.Ticks.ToString(),
+                    user = value.ChatMessage.Username.ToLower(),
+                    message = value.ChatMessage.Message
+                });
+
+                ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), value.ChatMessage.Message);
+
+                var channel = ChannelManager.Instance.GetChannel(value);
+                if (!channel.CanSpeak() || (Utilities.Utilities.RandomOneToNumber((int)((1 / (decimal)channel.frequency))*100) > 1 && !value.ChatMessage.Message.Trim().ToLower().Contains(TwitchCredentials.Instance.twitchUsername.Trim().ToLower()))) return;
+
+                var sentence = GenerateSentence(value);
+                if (sentence == null || sentence.Trim().ToLower() == "") return;
+
+                ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), sentence);
+
+                queuedMessages.Add(new QueuedMessage
+                {
+                    Event = value,
+                    Sentence = sentence,
+                    TimeSent = DateTime.Now.Ticks,
+                    Delay = 0
+                });
+
+                channel.SetSpeakTime();
             }
-
-            Utilities.Utilities.AppendMessageToLog(new MessageLog {
-                channel = value.ChatMessage.Channel.ToLower(),
-                time = DateTime.Now.Ticks.ToString(),
-                user = value.ChatMessage.Username.ToLower(),
-                message = value.ChatMessage.Message
-            });
-
-            ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), value.ChatMessage.Message);
-
-            var channel = ChannelManager.Instance.Channels[value.ChatMessage.Channel.ToLower()];
-            if (!channel.CanSpeak() || Utilities.Utilities.RandomOneToNumber(4) > 1) return;
-
-            var sentence = GenerateSentence(value);
-            if (sentence == null || sentence.Trim().ToLower() == "") return;
-
-            ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), sentence);
-
-            queuedMessages.Add(new QueuedMessage
+            catch (Exception e)
             {
-                Event = value,
-                Sentence = sentence,
-                TimeSent = DateTime.Now.Ticks,
-                Delay = 0
-            });
-
-            channel.SetSpeakTime();
+                UIManager.Instance.printMessage($"Exception while processing message, stack trace: {e}.");
+            }
         }
 
         private string GenerateSentence(OnMessageReceivedArgs value)
@@ -141,12 +146,15 @@ namespace SneetoApplication
             while (inputSentences.Length > 2000)
             {
                 var inputList = inputSentences.Split('\n').ToList();
-                inputList.RemoveAt(inputList.Count - 1);
+                inputList.RemoveAt(0);
                 inputSentences = String.Join("\n", inputList);
             }
+            inputSentences = inputSentences + "\n";
             var messages = runner.Generate_Sentence(inputSentences);
 
             var message = getRandomSentence(messages);
+
+            Utilities.Utilities.WriteLineToFile($"Chose sentence: {message}", "generated_sentences.log");
 
             UIManager.Instance.printMessage("Created message in " + (GetTimeMilliseconds() - startTime)  + "ms.");
 
@@ -160,18 +168,19 @@ namespace SneetoApplication
             listMessages = listMessages
                 .Where(x => !String.IsNullOrWhiteSpace(x))
                 .ToList();
+
+            //Log for testing
+            Utilities.Utilities.WriteLineToFile($"Generated sentences: ", "generated_sentences.log");
+            listMessages.ForEach(it => { Utilities.Utilities.WriteLineToFile(it, "generated_sentences.log"); });
+            
+
             var messagesToRemove = new List<string>();
             var regex = "(={40}.SAMPLE.\\d.={40}|={80})";
-
+            var firstSample = false;
             listMessages.ForEach(it => {
                 if (Regex.Match(it, regex).Success) {
                     messagesToRemove.Add(it);
-                    if (listMessages.IndexOf(it) != 0) messagesToRemove.Add(listMessages[listMessages.IndexOf(it) - 1]);
-                    return;
-                }
-                if (it.Length <= 2)
-                {
-                    messagesToRemove.Add(it);
+                    firstSample = true;
                     return;
                 }
                 if (!IsValidSentence(it))
@@ -179,6 +188,17 @@ namespace SneetoApplication
                     messagesToRemove.Add(it);
                     return;
                 }
+                if (!it.Contains("<|endoftext|>"))
+                {
+                    messagesToRemove.Add(it);
+                    return;
+                }
+                if (firstSample)
+                {
+                    firstSample = false;
+                    return;
+                }
+                messagesToRemove.Add(it);
             });
 
             messagesToRemove.ForEach(it =>
@@ -186,11 +206,18 @@ namespace SneetoApplication
                 listMessages.Remove(it);
             });
 
-            return listMessages.Count <= 0 ? null : listMessages[Utilities.Utilities.RandomZeroToNumberMinusOne(listMessages.Count)];
+            var messagesToReturn = new List<string>();
+            listMessages.ForEach(it =>
+            {
+                messagesToReturn.Add(it.Split(new string[] { GPT2ENDTOKEN }, StringSplitOptions.None)[0]);
+            });
+
+            return messagesToReturn.Count <= 0 ? null : messagesToReturn[Utilities.Utilities.RandomZeroToNumberMinusOne(messagesToReturn.Count)];
         }
 
         private void ProcessCommand(OnMessageReceivedArgs value)
         {
+            
         }
 
         public int GetTimeMilliseconds() => (int)(DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);

@@ -66,6 +66,7 @@ namespace SneetoApplication
         private void OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
         {
             CommandManager.Instance.channelEventsToProcess.Enqueue(e);
+            UIManager.Instance.printMessage(e);
         }
 
         private void onMessageReceived(object sender, OnMessageReceivedArgs e)

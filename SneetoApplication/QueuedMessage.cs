@@ -10,6 +10,7 @@ namespace SneetoApplication
     public class QueuedMessage
     {
         public OnMessageReceivedArgs Event;
+        public OnChatCommandReceivedArgs CommandEvent;
         public long TimeSent;
         public int Delay;
         public string Sentence;
