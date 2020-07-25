@@ -35,54 +35,54 @@ namespace SneetoApplication
 
         private void button2_Click(object sender, EventArgs e)
         {
-            string data = "";
-            try
-            {
-                StreamReader sr = new StreamReader(Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\log.txt");
-                while (!sr.EndOfStream)
-                {
-                    data = sr.ReadLine();
+            //string data = "";
+            //try
+            //{
+            //    StreamReader sr = new StreamReader(Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\log.txt");
+            //    while (!sr.EndOfStream)
+            //    {
+            //        data = sr.ReadLine();
 
-                    var dictionary = new Dictionary<string, string>();
+            //        var dictionary = new Dictionary<string, string>();
 
-                    var startIndex = 0;
-                    var index = data.IndexOf(' ', 0);
-                    var channel = data.Substring(startIndex, index - startIndex);
+            //        var startIndex = 0;
+            //        var index = data.IndexOf(' ', 0);
+            //        var channel = data.Substring(startIndex, index - startIndex);
 
-                    dictionary.Add("channel", channel);
+            //        dictionary.Add("channel", channel);
 
-                    startIndex = index + 1;
-                    index = data.IndexOf(' ', startIndex);
-                    var platform = data.Substring(startIndex, index - startIndex);
+            //        startIndex = index + 1;
+            //        index = data.IndexOf(' ', startIndex);
+            //        var platform = data.Substring(startIndex, index - startIndex);
 
-                    dictionary.Add("platform", platform);
+            //        dictionary.Add("platform", platform);
 
-                    startIndex = index + 1;
-                    index = data.IndexOf(' ', startIndex);
-                    var time = data.Substring(startIndex, index - startIndex);
+            //        startIndex = index + 1;
+            //        index = data.IndexOf(' ', startIndex);
+            //        var time = data.Substring(startIndex, index - startIndex);
 
-                    dictionary.Add("time", time);
+            //        dictionary.Add("time", time);
 
-                    startIndex = index + 1;
-                    index = data.IndexOf(':', startIndex);
-                    var user = data.Substring(startIndex, index - startIndex);
+            //        startIndex = index + 1;
+            //        index = data.IndexOf(':', startIndex);
+            //        var user = data.Substring(startIndex, index - startIndex);
 
-                    dictionary.Add("user", user);
+            //        dictionary.Add("user", user);
 
-                    var message = data.Substring(index + 1);
+            //        var message = data.Substring(index + 1);
 
-                    dictionary.Add("message", message);
+            //        dictionary.Add("message", message);
 
-                    Utilities.Utilities.WriteLineToFile(Utilities.Utilities.jsonSerialize(dictionary) + ",", TokenMemoryManager.DATA_FILE_NAME);
-                    System.Console.WriteLine(@"{channel}, {platform}, {time}, {user}, {message}");
-                }
-                sr.Close();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error reading file");
-                Console.WriteLine(ex.StackTrace);
-            }
+            //        Utilities.Utilities.WriteLineToFile(Utilities.Utilities.jsonSerialize(dictionary) + ",", TokenMemoryManager.DATA_FILE_NAME);
+            //        System.Console.WriteLine(@"{channel}, {platform}, {time}, {user}, {message}");
+            //    }
+            //    sr.Close();
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine("Error reading file");
+            //    Console.WriteLine(ex.StackTrace);
+            //}
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -101,13 +101,13 @@ namespace SneetoApplication
 
         private void stemButton_Click(object sender, EventArgs e)
         {
-            var stem = stemBox.Text;
-            var tokens = StemManager.GetTokensForUnstemmedWord(stem);
+            //var stem = stemBox.Text;
+            //var tokens = StemManager.GetTokensForUnstemmedWord(stem);
 
-            foreach(var token in tokens)
-            {
-                consoleTextBox.AppendText(token.WordText + "\n");
-            }
+            //foreach(var token in tokens)
+            //{
+            //    consoleTextBox.AppendText(token.WordText + "\n");
+            //}
         }
 
         private void timer1_Tick(object sender, EventArgs e)

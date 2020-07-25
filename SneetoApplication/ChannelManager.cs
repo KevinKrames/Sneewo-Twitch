@@ -92,7 +92,6 @@ namespace SneetoApplication
                 {
                     case JOINED:
                         TwitchChatClient.Instance.JoinChannel(value.Name);
-                        UIManager.Instance.printMessage($"Connected to channel: {value.Name}");
                         Channels.Add(value.Name, value.Channel);
                         break;
                     case LEFT:
@@ -212,6 +211,7 @@ namespace SneetoApplication
                 new ChannelEvent
                 {
                     Name = channel.name,
+                    Channel = GetChannel(args),
                     Status = MUTE,
                     ShouldSave = true,
                     commandArgs = args
@@ -225,6 +225,7 @@ namespace SneetoApplication
                 new ChannelEvent
                 {
                     Name = channel.name,
+                    Channel = GetChannel(args),
                     Status = UNMUTE,
                     ShouldSave = true,
                     commandArgs = args
@@ -238,6 +239,7 @@ namespace SneetoApplication
                 new ChannelEvent
                 {
                     Name = channel.name,
+                    Channel = GetChannel(args),
                     Status = FREQUENCY,
                     ShouldSave = true,
                     commandArgs = args
@@ -251,6 +253,7 @@ namespace SneetoApplication
                 new ChannelEvent
                 {
                     Name = channel.name,
+                    Channel = GetChannel(args),
                     Status = CHANCE,
                     ShouldSave = true,
                     commandArgs = args

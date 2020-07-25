@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TwitchLib.Client;
 using TwitchLib.Client.Events;
@@ -61,6 +62,7 @@ namespace SneetoApplication
 
         private void onJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
+            UIManager.Instance.printMessage($"Connected to channel: {e.Channel}");
         }
 
         private void OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)
@@ -71,6 +73,7 @@ namespace SneetoApplication
 
         private void onMessageReceived(object sender, OnMessageReceivedArgs e)
         {
+            if (e.ChatMessage.Message.Length > 0 && e.ChatMessage.Message[0] == Brain.configuration[Brain.COMMANDCHAR][0]) return;
             UIManager.Instance.printMessage(e);
             Brain.Instance.messagesToProcess.Enqueue(e);
         }
@@ -90,6 +93,7 @@ namespace SneetoApplication
         public void Connect()
         {
             twitchClient.Connect();
+            Thread.Sleep(3000);
         }
     }
 }
