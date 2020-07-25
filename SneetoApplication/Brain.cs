@@ -112,7 +112,7 @@ namespace SneetoApplication
                 ChannelMemoryManager.Instance.AddSentence(value.ChatMessage.Channel.ToLower(), value.ChatMessage.Message);
 
                 var channel = ChannelManager.Instance.GetChannel(value);
-                if (!channel.CanSpeak() || (Utilities.Utilities.RandomOneToNumber((int)((1 / (decimal)channel.frequency))*100) > 1 && !value.ChatMessage.Message.Trim().ToLower().Contains(TwitchCredentials.Instance.twitchUsername.Trim().ToLower()))) return;
+                if (!channel.CanSpeak() || (Utilities.Utilities.RandomOneToNumber(100) < channel.chance && !value.ChatMessage.Message.Trim().ToLower().Contains(TwitchCredentials.Instance.twitchUsername.Trim().ToLower()))) return;
 
                 var sentence = GenerateSentence(value);
                 if (sentence == null || sentence.Trim().ToLower() == "") return;
