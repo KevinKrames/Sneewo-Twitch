@@ -21,6 +21,7 @@ namespace SneetoApplication
             InitializeComponent();
             brain = new Brain(this);
             UIManager.Instance.setForm(this);
+            GPT2PythonThread.StartPythonThread();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -128,6 +129,11 @@ namespace SneetoApplication
         private void richTextMemory_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            GPT2PythonThread.StopPythonThread();
         }
     }
 }

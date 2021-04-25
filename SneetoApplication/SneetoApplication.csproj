@@ -254,6 +254,8 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="GPT2\GPT2Message.cs" />
+    <Compile Include="GPT2\GPT2PythonThread.cs" />
     <Compile Include="GPT2Runner.cs" />
     <Compile Include="MessageLog.cs" />
     <Compile Include="QueuedMessage.cs" />

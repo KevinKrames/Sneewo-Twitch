@@ -69,6 +69,7 @@ namespace SneetoApplication
 
         public void printMessage(string message)
         {
+            if (string.IsNullOrEmpty(message)) return;
             messagesToAppend.Enqueue(message);
         }
 

@@ -1,0 +1,6 @@
+{
+    "useDatabase" : false,
+    "commandChar" : "!",
+    "pythonExecutable" : "C:\\Path\\To\\Python.exe",
+    "gpt2Path" : "Z:\\Path\\To\\GPT\\Folder"
+}
