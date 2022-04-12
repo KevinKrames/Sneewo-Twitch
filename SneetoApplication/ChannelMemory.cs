@@ -11,7 +11,7 @@ namespace SneetoApplication
     {
         public Dictionary<Stem, decimal> WordMemory;
         private List<ChannelMemorySentence> memorySentences;
-        private static int MaxSentenceDuration = 60000;
+        private static int MaxSentenceDuration = 30000;
         
         public ChannelMemory()
         {

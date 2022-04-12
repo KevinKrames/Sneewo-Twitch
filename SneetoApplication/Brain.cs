@@ -238,11 +238,11 @@ namespace SneetoApplication
                     messagesToRemove.Add(it);
                     return;
                 }
-                if (!it.Contains(GPT2ENDTOKEN))
-                {
-                    messagesToRemove.Add(it);
-                    return;
-                }
+                //if (!it.Contains(GPT2ENDTOKEN))
+                //{
+                //    messagesToRemove.Add(it);
+                //    return;
+                //}
                 if (firstSample)
                 {
                     firstSample = false;

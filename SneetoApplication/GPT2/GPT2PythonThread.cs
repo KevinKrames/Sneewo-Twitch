@@ -43,7 +43,7 @@ namespace SneetoApplication
 
             start.WorkingDirectory = configuration["gpt2Path"];
             start.FileName = configuration["pythonExecutable"];
-            start.Arguments = $"{configuration["gpt2Path"]}interactive_conditional_samples_server.py";
+            start.Arguments = $"{configuration["gpt2Path"]}sneewo_server.py";
             start.UseShellExecute = false;
             start.RedirectStandardOutput = true;
             start.RedirectStandardInput = true;
