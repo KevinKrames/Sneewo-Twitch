@@ -175,7 +175,7 @@ namespace SneetoApplication
             var startTime = GetTimeMilliseconds();
 
             var runner = GPT2Runner.Instance;
-            var inputSentences = String.Join("\n", ChannelMemoryManager.Instance.Channels[args.ChatMessage.Channel.ToLower()].GetMemorySentences().Select(it => it.Text));
+            var inputSentences = String.Join("\n", ChannelMemoryManager.Instance.Channels[args.ChatMessage.Channel.ToLower()].GetMemorySentences().OrderBy(o => o.TimeSent).Select(it => it.Text));
             while (inputSentences.Length > 2000)
             {
                 var inputList = inputSentences.Split('\n').ToList();
