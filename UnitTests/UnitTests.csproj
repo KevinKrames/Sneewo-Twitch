@@ -238,9 +238,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SneetoApplication\SneetoApplication.csproj">
+    <ProjectReference Include="..\SneetoApplication\SneewoSitcomApplication.csproj">
       <Project>{10CCA11C-2ED2-4E8B-87B2-72CCED4CA148}</Project>
-      <Name>SneetoApplication</Name>
+      <Name>SneewoSitcomApplication</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

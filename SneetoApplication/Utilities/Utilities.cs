@@ -33,7 +33,6 @@ namespace SneetoApplication.Utilities
 
         internal static List<string> loadListFromTextFile(string v)
         {
-            string data = "";
             var newList = new List<string>();
             try
             {

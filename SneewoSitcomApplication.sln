@@ -1,11 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SneetoApplication", "SneetoApplication\SneetoApplication.csproj", "{10CCA11C-2ED2-4E8B-87B2-72CCED4CA148}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{9700C24A-3875-48F2-9FDC-0644A2AFD4D5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SneewoSitcomApplication", "SneetoApplication\SneewoSitcomApplication.csproj", "{10CCA11C-2ED2-4E8B-87B2-72CCED4CA148}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		{10CCA11C-2ED2-4E8B-87B2-72CCED4CA148}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{10CCA11C-2ED2-4E8B-87B2-72CCED4CA148}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{10CCA11C-2ED2-4E8B-87B2-72CCED4CA148}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9700C24A-3875-48F2-9FDC-0644A2AFD4D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9700C24A-3875-48F2-9FDC-0644A2AFD4D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9700C24A-3875-48F2-9FDC-0644A2AFD4D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9700C24A-3875-48F2-9FDC-0644A2AFD4D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

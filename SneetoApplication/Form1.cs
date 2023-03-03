@@ -21,7 +21,6 @@ namespace SneetoApplication
             InitializeComponent();
             brain = new Brain(this);
             UIManager.Instance.setForm(this);
-            GPT2PythonThread.StartPythonThread();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -117,7 +116,6 @@ namespace SneetoApplication
             {
                 UIManager.Instance.Update();
                 ChannelManager.Instance.Update();
-                ChannelMemoryManager.Instance.Update();
                 CommandManager.Instance.Update();
                 Brain.Instance.Update();
             } catch (Exception exc)
@@ -133,7 +131,6 @@ namespace SneetoApplication
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            GPT2PythonThread.StopPythonThread();
         }
     }
 }

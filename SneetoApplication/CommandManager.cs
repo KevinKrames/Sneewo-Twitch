@@ -40,8 +40,7 @@ namespace SneetoApplication
             channelEventsToProcess = new ConcurrentQueue<OnChatCommandReceivedArgs>();
             commands = new List<Command>
             {
-                new JoinCommand(),
-                new LeaveCommand()
+                
             };
         }
 

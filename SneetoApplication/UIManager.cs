@@ -45,23 +45,6 @@ namespace SneetoApplication
             }
         }
 
-        public void PrintMemory()
-        {
-            form.richTextMemory.Clear();
-            form.richTextMemory.AppendText("----------------------" + "\n");
-            var channelMemoryManager = ChannelMemoryManager.Instance;
-            foreach (var channelMemoryName in channelMemoryManager.Channels.Keys)
-            {
-                form.richTextMemory.AppendText("---" + channelMemoryName + "---" + "\n");
-                var wordMemory = channelMemoryManager.Channels[channelMemoryName].WordMemory;
-                foreach (var stem in wordMemory.Keys)
-                {
-                    form.richTextMemory.AppendText(stem.stemText + " - " + wordMemory[stem] + "\n");
-                }
-            }
-            form.richTextMemory.AppendText("----------------------" + "\n");
-        }
-
         public void setForm(Form1 form)
         {
             this.form = form;
