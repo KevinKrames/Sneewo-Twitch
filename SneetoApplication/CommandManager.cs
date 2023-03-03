@@ -15,9 +15,19 @@ namespace SneetoApplication
         private static CommandManager commandManager;
         public ConcurrentQueue<OnChatCommandReceivedArgs> channelEventsToProcess;
         private List<Command> commands;
+
+        public static readonly string REQUESTOUTGOINGFILE = "requestOutgoing.json";
+        public static readonly string REQUESTINFINISHEDFILE = "requestFinished.json";
+
         public static readonly string TIMERREGEX = "(!timer \\d*$)";
         public static readonly string CHANCEREGEX = "(!chance \\d*$)";
-        public static readonly string MESSAGEHELP = "List of Commands: !join | !leave | !mute | !unmute | !timer 15 (can't send more than a message every 15 seconds) | !chance 15 (e.g. 15% chance to speak)";
+        public static readonly string MESSAGEHELP = "List of Commands: !help | !request {Subject of Episode}";
+
+        public class SitcomRequest
+        {
+            public string text;
+            public string user;
+        }
 
         public static CommandManager Instance
         {
@@ -48,26 +58,27 @@ namespace SneetoApplication
         {
             while (channelEventsToProcess.TryDequeue(out OnChatCommandReceivedArgs value))
             {
-                var command = commands.Where(c => c.name == value.Command.CommandText.ToLower()).FirstOrDefault();
-                if (command != null) command.Execute(value);
+                //var command = commands.Where(c => c.name == value.Command.CommandText.ToLower()).FirstOrDefault();
+                //if (command != null) command.Execute(value);
 
                 try
                 {
                     if (!value.Command.ChatMessage.IsModerator && !value.Command.ChatMessage.IsBroadcaster) return;
 
                     var channel = ChannelManager.Instance.GetChannel(value);
+                    var message = value.Command.ChatMessage.Message.Substring(1).Trim().ToLower();
 
-                    if (value.Command.ChatMessage.Message.Substring(1).Trim().ToLower() == ChannelManager.MUTE)
+                    if (message == ChannelManager.MUTE)
                     {
                         ChannelManager.Instance.Mute(channel, value);
                     }
 
-                    if (value.Command.ChatMessage.Message.Substring(1).Trim().ToLower() == ChannelManager.UNMUTE)
+                    if (message == ChannelManager.UNMUTE)
                     {
                         ChannelManager.Instance.Unmute(channel, value);
                     }
 
-                    if (value.Command.ChatMessage.Message.Substring(1).Trim().ToLower() == ChannelManager.HELP)
+                    if (message == ChannelManager.HELP)
                     {
                         Brain.Instance.queuedMessages.Add(new QueuedMessage
                         {
@@ -76,17 +87,19 @@ namespace SneetoApplication
                             TimeSent = DateTime.Now.Ticks,
                             Delay = 0
                         });
+                        var temp = new List<SitcomRequest>() { new SitcomRequest { text = "This is a text", user = "moltov" } };
+                        Utilities.Utilities.WriteToFile(Utilities.Utilities.JsonSerializeObjectList(temp), Brain.configuration["sitcomPath"], REQUESTOUTGOINGFILE);
                     }
 
-                    if (Regex.Match(value.Command.ChatMessage.Message.Trim().ToLower(), TIMERREGEX).Success)
-                    {
-                        ChannelManager.Instance.SetFrequency(channel, value);
-                    }
+                    //if (Regex.Match(message, TIMERREGEX).Success)
+                    //{
+                    //    ChannelManager.Instance.SetFrequency(channel, value);
+                    //}
 
-                    if (Regex.Match(value.Command.ChatMessage.Message.Trim().ToLower(), CHANCEREGEX).Success)
-                    {
-                        ChannelManager.Instance.SetChance(channel, value);
-                    }
+                    //if (Regex.Match(message, CHANCEREGEX).Success)
+                    //{
+                    //    ChannelManager.Instance.SetChance(channel, value);
+                    //}
                 }
                 catch (Exception e)
                 {

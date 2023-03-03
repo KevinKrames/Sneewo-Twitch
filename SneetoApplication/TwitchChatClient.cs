@@ -57,7 +57,7 @@ namespace SneetoApplication
         public void sendMessage(string channel, string message)
         {
             if (twitchClient.IsConnected)
-                twitchClient.SendMessage(twitchClient.JoinedChannels.Where(e => e.Channel.ToLower().Trim() == channel.ToLower().Trim()).FirstOrDefault().Channel, message);
+                twitchClient.SendMessage(twitchClient.JoinedChannels.Where(e => e.Channel.ToLower().Trim() == channel.ToLower().Trim()).FirstOrDefault()?.Channel, message);
         }
 
         private void onJoinedChannel(object sender, OnJoinedChannelArgs e)

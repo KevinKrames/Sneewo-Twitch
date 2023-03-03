@@ -11,9 +11,9 @@ namespace SneetoApplication.Utilities
     public static class Utilities
     {
         public static Random random = new Random();
-        public static string jsonSerialize(Object ob)
+        public static string JsonSerializeObjectList<TKEY>(List<TKEY> list)
         {
-            return JsonConvert.SerializeObject(ob);
+            return JsonConvert.SerializeObject(list);
         }
 
         public static Dictionary<string, string> jsonUnserialize(string json)
@@ -73,6 +73,11 @@ namespace SneetoApplication.Utilities
         {
             var path = Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\" + fileName;
             File.AppendAllText(path, data + Environment.NewLine);
+        }
+
+        public static void WriteToFile(string data, string path, string filename)
+        {
+            File.WriteAllText(path + filename, data + Environment.NewLine);
         }
 
         public static int RandomOneToNumber(int number)
