@@ -60,6 +60,11 @@ namespace SneetoApplication
                 twitchClient.SendMessage(twitchClient.JoinedChannels.Where(e => e.Channel.ToLower().Trim() == channel.ToLower().Trim()).FirstOrDefault()?.Channel, message);
         }
 
+        public void sendWhisper(string user, string message)
+        {
+            if (twitchClient.IsConnected)
+                twitchClient.SendWhisper(user, message);
+        }
         private void onJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
             UIManager.Instance.printMessage($"Connected to channel: {e.Channel}");

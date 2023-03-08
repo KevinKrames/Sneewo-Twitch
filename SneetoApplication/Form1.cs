@@ -118,6 +118,7 @@ namespace SneetoApplication
                 ChannelManager.Instance.Update();
                 CommandManager.Instance.Update();
                 Brain.Instance.Update();
+                RequestManager.Instance.Update();
             } catch (Exception exc)
             {
                 Utilities.Utilities.WriteLineToFile(exc.StackTrace, "log.txt");

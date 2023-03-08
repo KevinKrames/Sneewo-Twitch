@@ -16,18 +16,11 @@ namespace SneetoApplication
         public ConcurrentQueue<OnChatCommandReceivedArgs> channelEventsToProcess;
         private List<Command> commands;
 
-        public static readonly string REQUESTOUTGOINGFILE = "requestOutgoing.json";
-        public static readonly string REQUESTINFINISHEDFILE = "requestFinished.json";
-
         public static readonly string TIMERREGEX = "(!timer \\d*$)";
         public static readonly string CHANCEREGEX = "(!chance \\d*$)";
         public static readonly string MESSAGEHELP = "List of Commands: !help | !request {Subject of Episode}";
 
-        public class SitcomRequest
-        {
-            public string text;
-            public string user;
-        }
+        
 
         public static CommandManager Instance
         {
@@ -63,20 +56,20 @@ namespace SneetoApplication
 
                 try
                 {
-                    if (!value.Command.ChatMessage.IsModerator && !value.Command.ChatMessage.IsBroadcaster) return;
+                    //if (!value.Command.ChatMessage.IsModerator && !value.Command.ChatMessage.IsBroadcaster) return;
 
                     var channel = ChannelManager.Instance.GetChannel(value);
                     var message = value.Command.ChatMessage.Message.Substring(1).Trim().ToLower();
 
-                    if (message == ChannelManager.MUTE)
-                    {
-                        ChannelManager.Instance.Mute(channel, value);
-                    }
+                    //if (message == ChannelManager.MUTE)
+                    //{
+                    //    ChannelManager.Instance.Mute(channel, value);
+                    //}
 
-                    if (message == ChannelManager.UNMUTE)
-                    {
-                        ChannelManager.Instance.Unmute(channel, value);
-                    }
+                    //if (message == ChannelManager.UNMUTE)
+                    //{
+                    //    ChannelManager.Instance.Unmute(channel, value);
+                    //}
 
                     if (message == ChannelManager.HELP)
                     {
@@ -87,20 +80,26 @@ namespace SneetoApplication
                             TimeSent = DateTime.Now.Ticks,
                             Delay = 0
                         });
-                        var temp = new List<SitcomRequest>() { new SitcomRequest { text = "This is a text", user = "moltov" } };
-                        Utilities.Utilities.WriteToFile(Utilities.Utilities.JsonSerializeObjectList(temp), Brain.configuration["sitcomPath"], REQUESTOUTGOINGFILE);
+                        
                     }
 
-                    //if (Regex.Match(message, TIMERREGEX).Success)
-                    //{
-                    //    ChannelManager.Instance.SetFrequency(channel, value);
-                    //}
+                    if (message.StartsWith(ChannelManager.REQUEST))
+                    {
+                        var index = message.IndexOf(" ") + 1;
+                        var split = message.Substring(index, message.Length - index);
+                        RequestManager.Instance.CreateRequestEvent(value.Command.ChatMessage.Username, split, channel);
+                    }
 
-                    //if (Regex.Match(message, CHANCEREGEX).Success)
-                    //{
-                    //    ChannelManager.Instance.SetChance(channel, value);
-                    //}
-                }
+                        //if (Regex.Match(message, TIMERREGEX).Success)
+                        //{
+                        //    ChannelManager.Instance.SetFrequency(channel, value);
+                        //}
+
+                        //if (Regex.Match(message, CHANCEREGEX).Success)
+                        //{
+                        //    ChannelManager.Instance.SetChance(channel, value);
+                        //}
+                    }
                 catch (Exception e)
                 {
                     UIManager.Instance.printMessage($"Exception while processing message, stack trace: {e}.");
