@@ -1,4 +1,5 @@
 ﻿using SneetoApplication.Data_Structures;
+using SneetoApplication.PythonInstances;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,6 +8,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,11 +18,15 @@ namespace SneetoApplication
     {
         TwitchChatClient twitchChatClient;
         private Brain brain;
+        private bool isQuitting;
+
         public Form1()
         {
             InitializeComponent();
             brain = new Brain(this);
             UIManager.Instance.setForm(this);
+            ChatGPTPython.StartPythonThread();
+            TTSPython.StartPythonThread();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -112,6 +118,10 @@ namespace SneetoApplication
 
         private void timer1_Tick(object sender, EventArgs e)
         {
+            if (isQuitting && ChatGPTPython.HasExited() && TTSPython.HasExited())
+            {
+                System.Environment.Exit(0);
+            }
             try
             {
                 UIManager.Instance.Update();
@@ -121,7 +131,7 @@ namespace SneetoApplication
                 RequestManager.Instance.Update();
             } catch (Exception exc)
             {
-                Utilities.Utilities.WriteLineToFile(exc.StackTrace, "log.txt");
+                Utilities.Utilities.WriteLineToFile($"{exc.StackTrace}, {exc.Message}, {exc.Source}", "log.txt");
             }
         }
 
@@ -132,6 +142,19 @@ namespace SneetoApplication
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+
+            
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            isQuitting = true;
+            if (ChatGPTPython.HasExited() == false)
+                ChatGPTPython.process.Kill();
+            Thread.Sleep(1000);
+            if (TTSPython.HasExited() == false)
+                TTSPython.process.Kill();
+            Thread.Sleep(1000);
         }
     }
 }

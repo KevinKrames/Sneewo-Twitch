@@ -20,7 +20,10 @@ namespace SneetoApplication
         public const string JOINED = "joined";
         public const string LEFT = "left";
         public const string MUTE = "mute";
+        public const string CLEAR = "clear";
         public const string REQUEST = "request";
+        public const string REQUESTS = "requests";
+        public const string RESET = "reset";
         public const string UNMUTE = "unmute";
         public const string HELP = "help";
         public const string FREQUENCY = "frequency";

@@ -9,6 +9,8 @@ using System.Threading;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SneetoApplication.PythonInstances;
+using System.IO;
 
 namespace SneetoApplication
 {
@@ -47,6 +49,13 @@ namespace SneetoApplication
             }
         }
 
+        public bool Clearing = false;
+        public bool Resetting = false;
+        public bool ResetFlag = false;
+        bool waitingForValidation = false;
+        bool waitingForChatGPT = false;
+        bool waitingForTTSGPT = false;
+
         public RequestManager()
         {
             requestEventsToProcess = new ConcurrentQueue<RequestEvent>();
@@ -66,9 +75,39 @@ namespace SneetoApplication
             Utilities.Utilities.WriteToFile(Utilities.Utilities.JsonSerializeObjectList(output), Brain.configuration["oneDrive"], REQUESTOUTGOINGFILE);
         }
 
+        public void ReadIncomingFile()
+        {
+            if (!File.Exists($"{Brain.configuration["oneDrive"]}{REQUESTINFINISHEDFILE}"))
+                return;
+            requestsIncoming = JsonConvert.DeserializeObject<List<SitcomRequest>>(Utilities.Utilities.loadFile($"{Brain.configuration["oneDrive"]}{REQUESTINFINISHEDFILE}"));
+            var requestsToRemove = new List<SitcomRequest>();
+            if (requestsIncoming != null)
+            {
+                foreach (var req in requestsIncoming)
+                {
+                    foreach (var req2 in requestsOutgoing)
+                    {
+                        if (req.File == req2.File)
+                        {
+                            requestsToRemove.Add(req2);
+                        }
+                    }
+                }
+                foreach (var req3 in requestsToRemove)
+                {
+                    requestsOutgoing.Remove(req3);
+                }
+            }
+        }
+
         public void Update()
         {
-            while (requestEventsToProcess.TryDequeue(out var requestEvent))
+            if (ResetFlag == true)
+            {
+                ResetFlag = false;
+                ResetPythonAndRequests();
+            }
+            while (Resetting == false && requestEventsToProcess.TryDequeue(out var requestEvent))
             {
                 //var command = commands.Where(c => c.name == value.Command.CommandText.ToLower()).FirstOrDefault();
                 //if (command != null) command.Execute(value);
@@ -86,10 +125,20 @@ namespace SneetoApplication
                     {
                         if (!requestsOutgoing.Any(it => it.User == requestUser.Name))
                         {
-                            var sitcomRequest = new SitcomRequest { User = requestUser.Name, Text = requestEvent.Text, RequestState = RequestState.Unsent, channel = requestEvent.channel};
-                            requestsOutgoing.Add(sitcomRequest);
-                            var thread = new Thread(async () => await ModerationCheckAsync(sitcomRequest));
-                            thread.Start();
+                            if (requestsOutgoing.Count < 5 && waitingForValidation == false)
+                            {
+                                waitingForValidation = true;
+                                var sitcomRequest = new SitcomRequest { User = requestUser.Name, Text = requestEvent.Text, RequestState = RequestState.Unsent, channel = requestEvent.channel };
+                                requestsOutgoing.Add(sitcomRequest);
+                                    var thread = new Thread(async () => await ModerationCheckAsync(sitcomRequest));
+                                    thread.Start();
+                                
+                                TwitchChatClient.Instance.sendMessage(requestEvent.channel.name, $"{requestEvent.Name}: request recorded, please wait.");
+                            } else
+                            {
+                                UIManager.Instance.printMessage($"requestsOutgoing:{requestsOutgoing.Count}, waiting for validation:{waitingForValidation}");
+                                TwitchChatClient.Instance.sendMessage(requestEvent.channel.name, $"{requestEvent.Name}: Theres too many requests pending, try again later.");
+                            }
                         }
                         else
                         {
@@ -107,7 +156,139 @@ namespace SneetoApplication
                 }
             }
 
+            
+            if (Clearing && waitingForChatGPT == false && waitingForValidation == false && waitingForTTSGPT == false)
+            {
+                var channel = ChannelManager.Instance.Channels?.Values?.ToList()[0];
+                requestsOutgoing.Clear();
+                Clearing = false;
+                TwitchChatClient.Instance.sendMessage(channel.name, $"Requests have been cleared out.");
+            }
+
+            if (waitingForChatGPT == false)
+            {
+                foreach (var sitcomRequest in requestsOutgoing)
+                {
+                    if (sitcomRequest.RequestState == RequestState.Validated)
+                    {
+                        waitingForValidation = false;
+
+                        if (Clearing == false)
+                        {
+                            var chatGPTMessage = new ChatGPTMessage { inputText = sitcomRequest.Text, };
+                            ChatGPTPython.inputToPython.Enqueue(chatGPTMessage);
+                            sitcomRequest.RequestState = RequestState.WaitingForScript;
+                            waitingForChatGPT = true;
+                        }
+                    }
+                }
+            }
+
+            if (waitingForTTSGPT == false && ChatGPTPython.outputFromPython.TryDequeue(out var result))
+            {
+                waitingForChatGPT = false;
+
+                if (Clearing == false)
+                {
+                    foreach (var sitcomRequest in requestsOutgoing)
+                    {
+                        
+                        if (sitcomRequest.Text == result.inputText)
+                        {
+                            if (result.outputText.Replace("\n", "").StartsWith("ERROR"))
+                            {
+                                TwitchChatClient.Instance.sendMessage(sitcomRequest.channel.name, $"{sitcomRequest.User}: Error generating your request, the server might be overloaded.");
+                                sitcomRequest.RequestState = RequestState.Failed;
+                                waitingForChatGPT = false;
+                            } else
+                            {
+                                sitcomRequest.File = result.outputText.Replace("\n", "");
+                                var message = new TTSPythonMessage { inputText = sitcomRequest.File };
+                                TTSPython.inputToPython.Enqueue(message);
+                                sitcomRequest.RequestState = RequestState.WaitingForVoices;
+                                waitingForTTSGPT = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (waitingForTTSGPT && TTSPython.outputFromPython.TryDequeue(out var ttsresult))
+            {
+                waitingForTTSGPT = false;
+                if (Clearing == false)
+                {
+                    var currentRequest = false;
+                    foreach (var sitcomRequest in requestsOutgoing)
+                    {
+                        currentRequest = false;
+                        var lines = ttsresult.outputText.Split('\n');
+                        foreach (var line in lines)
+                        {
+                            if (currentRequest && line.Replace("\n", "").StartsWith("ERROR"))
+                            {
+                                TwitchChatClient.Instance.sendMessage(sitcomRequest.channel.name, $"{sitcomRequest.User}: Error generating your request, the server might be overloaded.");
+                                sitcomRequest.RequestState = RequestState.Failed;
+                                waitingForTTSGPT = false;
+                            }
+                            if (sitcomRequest.File != null && sitcomRequest.File.Replace(".txt", "") == line.Replace("\n", ""))
+                            {
+                                currentRequest = true;
+                                sitcomRequest.File = sitcomRequest.File.Replace(".txt", "");
+                                sitcomRequest.RequestState = RequestState.Processed;
+                            }
+                        }
+                    }
+                }
+            }
+            var requestsToRemove = new List<SitcomRequest>();
+            foreach (var sitcomRequest in requestsOutgoing)
+            {
+                if (sitcomRequest.RequestState == RequestState.Failed)
+                {
+                    requestsToRemove.Add(sitcomRequest);
+                }
+            }
+            foreach (var sitcomRequest in requestsToRemove) {
+                waitingForValidation = false;
+                requestsOutgoing.Remove(sitcomRequest); 
+            }
+
             WriteOutGoingToFile();
+            ReadIncomingFile();
+        }
+
+        public void ResetPythonAndRequests()
+        {
+            Resetting = true;
+            Clearing = true;
+            if (TTSPython.HasExited() == false)
+            {
+                TTSPython.StopPythonThread();
+            }
+            if (ChatGPTPython.HasExited() == false)
+            {
+                ChatGPTPython.StopPythonThread();
+            }
+            while(true)
+            {
+
+                if (ChatGPTPython.HasExited() == true && TTSPython.HasExited() == true)
+                {
+                    TTSPython.StartPythonThread();
+                    ChatGPTPython.StartPythonThread();
+                }
+                if (ChatGPTPython.isInitialized && TTSPython.isInitialized) {
+                    requestsOutgoing.Clear();
+                    waitingForChatGPT = false;
+                    waitingForTTSGPT = false;
+                    waitingForValidation = false;
+                    Resetting = false;
+                    Clearing = false;
+                    TwitchChatClient.Instance.sendMessage("Toomanyjims", $"Servers rebooted due to an error, requests have been cleared out.");
+                    break;
+                }
+            }
         }
         private static async Task ModerationCheckAsync(SitcomRequest sitcomRequest)
         {
@@ -133,25 +314,35 @@ namespace SneetoApplication
                 Content = new StringContent(payload, Encoding.UTF8, "application/json"),
                 Method = HttpMethod.Post
             };
-
-            var httpResponse = await client.SendAsync(message);
-
-            //var response = await client.PostAsync(uri, content);
-
-            var responseString = await httpResponse.Content.ReadAsStringAsync();
-            var response = JsonConvert.DeserializeObject<ModerationsResponse>(responseString);
-            UIManager.Instance.printMessage($"Reponse from open ai: {responseString}");
-
-            if (response.Results.Any(it => it.Flagged))
+            try
             {
-                TwitchChatClient.Instance.sendMessage(sitcomRequest.channel.name, $"{sitcomRequest.User}: {REQUESTALREADYPENDINGMESSAGE}");
-            } else
+                var httpResponse = await client.SendAsync(message);
+
+                //var response = await client.PostAsync(uri, content);
+
+                var responseString = await httpResponse.Content.ReadAsStringAsync();
+                var response = JsonConvert.DeserializeObject<ModerationsResponse>(responseString);
+                UIManager.Instance.printMessage($"Reponse from open ai: {responseString}");
+
+                if (response.Results.Any(it => it.Flagged) || Brain.Instance.IsValidSentence(sitcomRequest.Text) == false)
+                {
+                    TwitchChatClient.Instance.sendMessage(sitcomRequest.channel.name, $"{sitcomRequest.User}: Failed processing your request due to the message being flagged as inappropriate");
+                    sitcomRequest.RequestState = RequestState.Failed;
+                }
+                else
+                {
+                    sitcomRequest.Validated = true;
+                    sitcomRequest.RequestState = RequestState.Validated;
+                    UIManager.Instance.printMessage($"Marked request as validated: {sitcomRequest.User}");
+                }
+            } catch (Exception e)
             {
+                RequestManager.Instance.waitingForValidation = false;
+                UIManager.Instance.printMessage($"Failed to validate cuz of http requests {e}");
                 sitcomRequest.Validated = true;
-                sitcomRequest.RequestState = RequestState.Waiting;
-                UIManager.Instance.printMessage($"Marked request as complete: {sitcomRequest.User}");
+                sitcomRequest.RequestState = RequestState.Validated;
             }
-        }
+}
         internal void CreateRequestEvent(string username, string text, Channel channel)
         {
             var temp = new RequestEvent { Text = text, Name = username,  TimeSent = DateTime.Now.Ticks, channel = channel};
@@ -173,8 +364,9 @@ namespace SneetoApplication
         public bool Validated;
         public RequestState RequestState;
         public Channel channel;
+        public string File;
 
-        public override bool Equals(Object obj)
+        public override bool Equals(object obj)
         {
             //Check for null and compare run-time types.
             if ((obj == null) || !this.GetType().Equals(obj.GetType()))
@@ -206,8 +398,12 @@ namespace SneetoApplication
     public enum RequestState
     {
         Unsent,
-        Waiting,
-        Completed
+        Validated,
+        WaitingForScript,
+        WaitingForVoices,
+        Processed,
+        Completed,
+        Failed
     }
 
     public abstract class BaseResponse

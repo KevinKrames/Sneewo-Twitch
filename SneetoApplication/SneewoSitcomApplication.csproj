@@ -244,6 +244,8 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="MessageLog.cs" />
+    <Compile Include="PythonInstances\ChatGPTPython.cs" />
+    <Compile Include="PythonInstances\TTSPython.cs" />
     <Compile Include="QueuedMessage.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

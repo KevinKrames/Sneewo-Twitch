@@ -28,7 +28,7 @@ namespace SneetoApplication.Utilities
 
         public static IDictionary loadDictionaryFromJsonFile<TKEY, TVALUE>(string fileName)
         {
-            return JsonConvert.DeserializeObject<Dictionary<TKEY, TVALUE>>(loadFile(fileName));
+            return JsonConvert.DeserializeObject<Dictionary<TKEY, TVALUE>>(loadFileFromFiles(fileName));
         }
 
         internal static List<string> loadListFromTextFile(string v)
@@ -52,7 +52,7 @@ namespace SneetoApplication.Utilities
             return newList;
         }
 
-        public static string loadFile(string fileName)
+        public static string loadFileFromFiles(string fileName)
         {
             string data = "";
             try
@@ -69,10 +69,27 @@ namespace SneetoApplication.Utilities
             return data;
         }
 
+        public static string loadFile(string fileName)
+        {
+            string data = "";
+            try
+            {
+                StreamReader sr = new StreamReader(fileName);
+                data = sr.ReadToEnd();
+                sr.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error reading file" + fileName);
+                Console.WriteLine(e.StackTrace);
+            }
+            return data;
+        }
+
         public static void WriteLineToFile(string data, string fileName)
         {
             var path = Path.GetDirectoryName(Application.ExecutablePath) + "\\files\\" + fileName;
-            File.AppendAllText(path, data + Environment.NewLine);
+            //File.AppendAllText(path, data + Environment.NewLine);
         }
 
         public static void WriteToFile(string data, string path, string filename)
