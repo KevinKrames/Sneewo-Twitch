@@ -231,7 +231,7 @@ namespace SneetoApplication
                                 sitcomRequest.RequestState = RequestState.Failed;
                                 waitingForTTSGPT = false;
                             }
-                            if (sitcomRequest.File != null && sitcomRequest.File.Replace(".txt", "") == line.Replace("\n", ""))
+                            if (sitcomRequest.File != null && line.Replace("\n", "").Contains(sitcomRequest.File.Replace(".txt", "")))
                             {
                                 currentRequest = true;
                                 sitcomRequest.File = sitcomRequest.File.Replace(".txt", "");
