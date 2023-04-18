@@ -195,18 +195,23 @@ namespace SneetoApplication
                         
                         if (sitcomRequest.Text == result.inputText)
                         {
-                            if (result.outputText.Replace("\n", "").StartsWith("ERROR"))
+                            var lines = result.outputText.Split('\n');
+                            foreach (var line in lines)
                             {
-                                TwitchChatClient.Instance.sendMessage(sitcomRequest.channel.name, $"{sitcomRequest.User}: Error generating your request, the server might be overloaded.");
-                                sitcomRequest.RequestState = RequestState.Failed;
-                                waitingForChatGPT = false;
-                            } else
-                            {
-                                sitcomRequest.File = result.outputText.Replace("\n", "");
-                                var message = new TTSPythonMessage { inputText = sitcomRequest.File };
-                                TTSPython.inputToPython.Enqueue(message);
-                                sitcomRequest.RequestState = RequestState.WaitingForVoices;
-                                waitingForTTSGPT = true;
+                                if (line.Replace("\n", "").StartsWith("ERROR"))
+                                {
+                                    TwitchChatClient.Instance.sendMessage(sitcomRequest.channel.name, $"{sitcomRequest.User}: Error generating your request, the server might be overloaded.");
+                                    sitcomRequest.RequestState = RequestState.Failed;
+                                    waitingForChatGPT = false;
+                                }
+                                else if (line.Replace("\n", "").Contains(".txt"))
+                                {
+                                    sitcomRequest.File = line;
+                                    var message = new TTSPythonMessage { inputText = sitcomRequest.File };
+                                    TTSPython.inputToPython.Enqueue(message);
+                                    sitcomRequest.RequestState = RequestState.WaitingForVoices;
+                                    waitingForTTSGPT = true;
+                                }
                             }
                         }
                     }
