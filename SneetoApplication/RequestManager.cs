@@ -55,6 +55,7 @@ namespace SneetoApplication
         bool waitingForValidation = false;
         bool waitingForChatGPT = false;
         bool waitingForTTSGPT = false;
+        bool rebootingChatGPT = false;
 
         public RequestManager()
         {
@@ -184,10 +185,8 @@ namespace SneetoApplication
                 }
             }
 
-            if (waitingForTTSGPT == false && ChatGPTPython.outputFromPython.TryDequeue(out var result))
+            if (waitingForTTSGPT == false && rebootingChatGPT == false && ChatGPTPython.outputFromPython.TryDequeue(out var result))
             {
-                waitingForChatGPT = false;
-
                 if (Clearing == false)
                 {
                     foreach (var sitcomRequest in requestsOutgoing)
@@ -200,9 +199,38 @@ namespace SneetoApplication
                             {
                                 if (line.Replace("\n", "").StartsWith("ERROR"))
                                 {
-                                    TwitchChatClient.Instance.sendMessage(sitcomRequest.channel.name, $"{sitcomRequest.User}: Error generating your request, the server might be overloaded.");
-                                    sitcomRequest.RequestState = RequestState.Failed;
-                                    waitingForChatGPT = false;
+                                    if (sitcomRequest.retries >= 1)
+                                    {
+                                        TwitchChatClient.Instance.sendMessage(sitcomRequest.channel.name, $"{sitcomRequest.User}: Error generating your request after retries, contact the creator on discord for more help.");
+                                        sitcomRequest.RequestState = RequestState.Failed;
+                                        waitingForChatGPT = false;
+                                    }
+                                    else
+                                    {
+                                        rebootingChatGPT = true;
+                                        UIManager.Instance.printMessage($"Exception while processing message, attempting to reboot chatgpt.");
+                                        if (ChatGPTPython.HasExited() == false)
+                                        {
+                                            ChatGPTPython.StopPythonThread();
+                                            UIManager.Instance.printMessage($"Stopping process.");
+                                        }
+                                        while (rebootingChatGPT)
+                                        {
+                                            if (ChatGPTPython.HasExited() == true && ChatGPTPython.isInitializing == false)
+                                            {
+                                                ChatGPTPython.StartPythonThread();
+                                                UIManager.Instance.printMessage($"Restarting process.");
+                                            }
+                                            if (ChatGPTPython.isInitialized)
+                                            {
+                                                rebootingChatGPT = false;
+                                                UIManager.Instance.printMessage($"Sucessfully rebooted.");
+                                                sitcomRequest.retries++;
+                                                var chatGPTMessage = new ChatGPTMessage { inputText = sitcomRequest.Text, };
+                                                ChatGPTPython.inputToPython.Enqueue(chatGPTMessage);
+                                            }
+                                        }
+                                    }
                                 }
                                 else if (line.Replace("\n", "").Contains(".txt"))
                                 {
@@ -211,6 +239,7 @@ namespace SneetoApplication
                                     TTSPython.inputToPython.Enqueue(message);
                                     sitcomRequest.RequestState = RequestState.WaitingForVoices;
                                     waitingForTTSGPT = true;
+                                    waitingForChatGPT = false;
                                 }
                             }
                         }
@@ -220,7 +249,6 @@ namespace SneetoApplication
 
             if (waitingForTTSGPT && TTSPython.outputFromPython.TryDequeue(out var ttsresult))
             {
-                waitingForTTSGPT = false;
                 if (Clearing == false)
                 {
                     var currentRequest = false;
@@ -241,6 +269,7 @@ namespace SneetoApplication
                                 currentRequest = true;
                                 sitcomRequest.File = sitcomRequest.File.Replace(".txt", "");
                                 sitcomRequest.RequestState = RequestState.Processed;
+                                waitingForTTSGPT = false;
                             }
                         }
                     }
@@ -370,6 +399,7 @@ namespace SneetoApplication
         public RequestState RequestState;
         public Channel channel;
         public string File;
+        public int retries = 0;
 
         public override bool Equals(object obj)
         {

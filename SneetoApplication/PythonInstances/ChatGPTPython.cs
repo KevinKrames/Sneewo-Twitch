@@ -21,6 +21,7 @@ namespace SneetoApplication.PythonInstances
         public static string startCommand = "xyz123zyx4321";
         public static string endCommand = "1234xyz321zyx";
         public static bool isInitialized = false;
+        public static bool isInitializing = false;
         public static void StartPythonThread()
         {
             inputToPython = new ConcurrentQueue<ChatGPTMessage>();
@@ -30,12 +31,14 @@ namespace SneetoApplication.PythonInstances
             ThreadStart work = PythonProcess;
             thread = new Thread(work);
             thread.Start();
+            isInitializing = true;
         }
 
 
         public static void StopPythonThread()
         {
             isInitialized = false;
+            isInitializing = false;
             if (HasExited() == false)
                 process.Kill();
             if (thread.IsAlive)
@@ -108,6 +111,7 @@ namespace SneetoApplication.PythonInstances
                                 result += line + "\n";
                             }
                             message.outputText = result;
+                            //message.outputText = "ERROR: simulating chatgpt broken";
                             outputFromPython.Enqueue(message);
                             UIManager.Instance.printMessage("ChatGPT read: \n" + result + "\n");
                         }
