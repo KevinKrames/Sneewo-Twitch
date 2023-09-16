@@ -33,14 +33,18 @@ namespace SneetoApplication
         {
             Channels = new Dictionary<string, Channel>();
             channelEventsToProcess = new ConcurrentQueue<ChannelEvent>();
+            JoinChannels();
+        }
 
+        public void JoinChannels()
+        {
             var localChannels = (Dictionary<string, object>)Utilities.Utilities.loadDictionaryFromJsonFile<string, object>("channels.json");
 
             try
             {
-                var channels = JsonConvert.DeserializeObject< List<Dictionary<string, string>>>( localChannels["channelsList"].ToString());
-
-                foreach(var channel in channels)
+                var channels = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(localChannels["channelsList"].ToString());
+                Channels.Clear();
+                foreach (var channel in channels)
                 {
                     var newChannel = new Channel(channel["name"]);
 
@@ -52,7 +56,8 @@ namespace SneetoApplication
 
                     AddChannel(newChannel, false);
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e.StackTrace);
             }

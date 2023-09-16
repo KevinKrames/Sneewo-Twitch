@@ -10,6 +10,7 @@ using TwitchLib.Client;
 using TwitchLib.Client.Events;
 using TwitchLib.Client.Interfaces;
 using TwitchLib.Client.Models;
+using TwitchLib.Communication.Events;
 
 namespace SneetoApplication
 {
@@ -52,6 +53,30 @@ namespace SneetoApplication
             twitchClient.OnJoinedChannel += onJoinedChannel;
             twitchClient.OnMessageReceived += onMessageReceived;
             twitchClient.OnChatCommandReceived += OnChatCommandReceived;
+            twitchClient.OnDisconnected += OnDisconnected;
+            twitchClient.OnConnectionError += OnConnectionError;
+        }
+
+        private void OnConnectionError(object sender, OnConnectionErrorArgs e)
+        {
+            RecreateClient();
+        }
+
+        private void OnDisconnected(object sender, OnDisconnectedEventArgs e)
+        {
+            RecreateClient();
+        }
+
+        private void RecreateClient()
+        {
+            twitchChatClient = new TwitchChatClient();
+            UIManager.Instance.printMessage($"Rebooting: {twitchClient.IsConnected}");
+            twitchClient.Connect();
+            Thread.Sleep(3000);
+            UIManager.Instance.printMessage($"Rebooting: {twitchClient.IsConnected}");
+
+            twitchChatClient.twitchClient = twitchClient;
+            ChannelManager.Instance.JoinChannels();
         }
 
         public void sendMessage(string channel, string message)
@@ -99,6 +124,11 @@ namespace SneetoApplication
         {
             twitchClient.Connect();
             Thread.Sleep(3000);
+        }
+
+        internal void Disconnect()
+        {
+            twitchClient.Disconnect();
         }
     }
 }
