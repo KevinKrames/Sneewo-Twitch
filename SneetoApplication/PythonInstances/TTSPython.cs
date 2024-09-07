@@ -61,7 +61,7 @@ namespace SneetoApplication.PythonInstances
 
             start.WorkingDirectory = configuration["TTSDirectory"];
             start.FileName = configuration["pythonExecutable"];
-            start.Arguments = $"{configuration["TTSDirectory"]}autogenerator_server.py";
+            start.Arguments = $"{configuration["TTSDirectory"]}coqui-server.py";
             start.UseShellExecute = false;
             start.RedirectStandardOutput = true;
             start.RedirectStandardInput = true;

@@ -236,7 +236,10 @@
     <Compile Include="ChannelManager.cs" />
     <Compile Include="CommandManager.cs" />
     <Compile Include="Commands\Command.cs" />
+    <Compile Include="Data Structures\Episode.cs" />
+    <Compile Include="Data Structures\ListExtensions.cs" />
     <Compile Include="Data Structures\TwitchCredentials.cs" />
+    <Compile Include="Data Structures\VoiceLine.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
