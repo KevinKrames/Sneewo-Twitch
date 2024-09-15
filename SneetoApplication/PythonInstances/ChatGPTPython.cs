@@ -64,7 +64,7 @@ namespace SneetoApplication.PythonInstances
 
             start.WorkingDirectory = configuration["ChatGPTDirectory"];
             start.FileName = configuration["pythonExecutable"];
-            start.Arguments = $"{configuration["ChatGPTDirectory"]}chatgpt_server.py";
+            start.Arguments = $"{configuration["ChatGPTDirectory"]}chatgpt_api_server.py";
             start.UseShellExecute = false;
             start.RedirectStandardOutput = true;
             start.RedirectStandardInput = true;

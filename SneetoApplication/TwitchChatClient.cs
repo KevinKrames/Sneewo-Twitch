@@ -19,6 +19,7 @@ namespace SneetoApplication
         private static TwitchChatClient twitchChatClient;
         private TwitchCredentials twitchCredentials;
         private ITwitchClient twitchClient;
+        private bool hasReturnedTrue = false;
 
         public static TwitchChatClient Instance
         {
@@ -33,6 +34,14 @@ namespace SneetoApplication
             set
             {
                 twitchChatClient = value;
+            }
+        }
+        public bool HasInitiliazedAndHasReturnedTrue
+        {
+            get
+            {
+                if (twitchClient == null) return true;
+                return hasReturnedTrue;
             }
         }
 
@@ -93,6 +102,9 @@ namespace SneetoApplication
         private void onJoinedChannel(object sender, OnJoinedChannelArgs e)
         {
             UIManager.Instance.printMessage($"Connected to channel: {e.Channel}");
+            hasReturnedTrue = true;
+            if (e.Channel != null)
+                sendMessage(e.Channel, $"Bot connected, requests are now open! use !request to make a request");
         }
 
         private void OnChatCommandReceived(object sender, OnChatCommandReceivedArgs e)

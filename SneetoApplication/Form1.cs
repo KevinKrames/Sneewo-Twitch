@@ -129,24 +129,40 @@ namespace SneetoApplication
                 CommandManager.Instance.Update();
                 Brain.Instance.Update();
                 RequestManager.Instance.Update();
+
+                closeIfAnyPartHasFailed();
+                connectIfPythonIsInitialized();
             } catch (Exception exc)
             {
                 Utilities.Utilities.WriteLineToFile($"{exc.StackTrace}, {exc.Message}, {exc.Source}", "log.txt");
             }
         }
 
-        private void richTextMemory_TextChanged(object sender, EventArgs e)
+        private void connectIfPythonIsInitialized()
         {
-
+            if (ChatGPTPython.isInitialized && TTSPython.isInitialized && !twitchChatClient.IsConnected)
+            {
+                twitchChatClient.Connect();
+            }
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void closeIfAnyPartHasFailed()
         {
-
-            
+            if (ChatGPTPython.HasExited() ||
+                TTSPython.HasExited() ||
+                (twitchChatClient.HasInitiliazedAndHasReturnedTrue && !twitchChatClient.IsConnected))
+            {
+                var channels = ChannelManager.Instance.Channels?.Values?.ToList();
+                Channel channel = null;
+                if (channels.Count > 0)
+                    channel = ChannelManager.Instance.Channels?.Values?.ToList()[0];
+                if (channel != null)
+                    TwitchChatClient.Instance.sendMessage(channel.name, $"There was an error with the requests bot, we will now attempt to reboot the bot. All current requests will be cleared out.");
+                terminateProcesses();
+            }
         }
 
-        private void button5_Click(object sender, EventArgs e)
+        private void terminateProcesses()
         {
             isQuitting = true;
             if (ChatGPTPython.HasExited() == false)
@@ -155,6 +171,19 @@ namespace SneetoApplication
             if (TTSPython.HasExited() == false)
                 TTSPython.process.Kill();
             Thread.Sleep(1000);
+        }
+
+        private void richTextMemory_TextChanged(object sender, EventArgs e)
+        {
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            terminateProcesses();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
         }
 
         private void button2_Click_1(object sender, EventArgs e)
